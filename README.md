@@ -30,6 +30,8 @@ Useful for external contracts which need to iterate over the on-chain ilk types 
     * `join()`: the `address` of the ilk's join adapter
     * `flip()`: the `address` of the ilk's flipper contract
     * `dec()`: the number of decimals for an `ilk` as `uint256`
+    * `name()`: the name of the token (if available)
+    * `symbol()`: the token symbol (if available)
 
 
 ## Testing
