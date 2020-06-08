@@ -121,6 +121,17 @@ contract IlkRegistryTest is DSTest {
         spell = new Spell();
     }
 
+    function stringToBytes32(string memory source) public pure returns (bytes32 result) {
+        bytes memory tempEmptyStringTest = bytes(source);
+        if (tempEmptyStringTest.length == 0) {
+            return 0x0;
+        }
+
+        assembly {
+            result := mload(add(source, 32))
+        }
+    }
+
     function vote() private {
         if (chief.hat() != address(spell)) {
             gov.approve(address(chief), uint256(-1));
@@ -281,5 +292,15 @@ contract IlkRegistryTest is DSTest {
         bytes32[] memory ilks = registry.get();
         assertEq(ilks[0], BAT_A);
         assertEq(ilks[1], USDC_A);
+    }
+
+    function testName() public {
+        registry.add(WBTC_JOIN);
+        assertEq(stringToBytes32(registry.name(WBTC_A)), stringToBytes32('Wrapped BTC'));
+    }
+
+    function testSymbol() public {
+        registry.add(WBTC_JOIN);
+        assertEq(stringToBytes32(registry.symbol(WBTC_A)), stringToBytes32('WBTC'));
     }
 }

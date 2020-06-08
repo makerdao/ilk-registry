@@ -50,6 +50,11 @@ abstract contract EndLike {
     function spot()       public virtual view returns (address);
 }
 
+abstract contract OptionalTokenLike {
+    function name()       public virtual view returns (string memory);
+    function symbol()     public virtual view returns (string memory);
+}
+
 contract IlkRegistry {
 
     event Rely(address usr);
@@ -108,7 +113,7 @@ contract IlkRegistry {
         // Validate ilk
         bytes32 _ilk = join.ilk();
         require(_ilk != 0, "IlkRegistry/ilk-adapter-invalid");
-        require(ilkData[_ilk].pos == 0, "IlkRegistry/ilk-already-exists");
+        require(ilkData[_ilk].join == address(0), "IlkRegistry/ilk-already-exists");
 
         (address _pip,) = spot.ilks(_ilk);
         require(_pip != address(0), "IlkRegistry/pip-invalid");
@@ -162,21 +167,24 @@ contract IlkRegistry {
         delete ilkData[ilk];
     }
 
+    // The number of active ilks
     function count() public view returns (uint256) {
         return ilks.length;
     }
 
+    // Return an array of the available ilks
     function get() public view returns (bytes32[] memory) {
         return ilks;
     }
 
+    // Get the ilk at a specific position in the array
     function get(uint256 pos) public view returns (bytes32) {
         require(pos < count());
         return ilks[pos];
     }
 
+    // Get a splice of the available ilks, useful when ilks array is large.
     function get(uint256 start, uint256 end) public view returns (bytes32[] memory) {
-        // FIXME errors
         require(start <= end && end < count(), "IlkRegistry/invalid-input");
         bytes32[] memory _ilks = new bytes32[]((end - start) + 1);
         uint256 _count = 0;
@@ -187,27 +195,43 @@ contract IlkRegistry {
         return _ilks;
     }
 
+    // The location of the ilk in the ilks array
     function pos(bytes32 ilk) public view returns (uint256) {
         return ilkData[ilk].pos;
     }
 
+    // The token address
     function gem(bytes32 ilk) public view returns (address) {
         return ilkData[ilk].gem;
     }
 
+    // The ilk's price feed
     function pip(bytes32 ilk) public view returns (address) {
         return ilkData[ilk].pip;
     }
 
+    // The ilk's join adapter
     function join(bytes32 ilk) public view returns (address) {
         return ilkData[ilk].join;
     }
 
+    // The flipper for the ilk
     function flip(bytes32 ilk) public view returns (address) {
         return ilkData[ilk].flip;
     }
 
+    // The number of decimals on the ilk
     function dec(bytes32 ilk) public view returns (uint256) {
         return ilkData[ilk].dec;
+    }
+
+    // Return the symbol of the token, if available
+    function symbol(bytes32 ilk) public view returns (string memory) {
+        return OptionalTokenLike(ilkData[ilk].gem).symbol();
+    }
+
+    // Return the name of the token, if available
+    function name(bytes32 ilk) public view returns (string memory) {
+        return OptionalTokenLike(ilkData[ilk].gem).name();
     }
 }
