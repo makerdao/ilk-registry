@@ -98,7 +98,7 @@ contract IlkRegistry {
         wards[msg.sender] = 1;
     }
 
-    function addIlk(address _adapter) public {
+    function add(address _adapter) public {
         JoinLike join = JoinLike(_adapter);
 
         // Validate adapter
@@ -131,23 +131,23 @@ contract IlkRegistry {
     }
 
     // Anyone can remove an ilk if the adapter has been caged
-    function removeIlk(bytes32 ilk) public {
+    function remove(bytes32 ilk) public {
         JoinLike join = JoinLike(ilkData[ilk].join);
         require(address(join) != address(0), "IlkRegistry/invalid-ilk");
         require(join.live() == 0, "IlkRegistry/ilk-live");
-        _removeIlk(ilk);
+        _remove(ilk);
         emit RemoveIlk(ilk);
     }
 
     // Admin can remove an ilk without any precheck
-    function removeIlkAuth(bytes32 ilk) public auth {
-        _removeIlk(ilk);
+    function removeAuth(bytes32 ilk) public auth {
+        _remove(ilk);
         emit RemoveIlk(ilk);
     }
 
     // Remove ilk from the ilks array by replacing the ilk with the
     //  last in the array and then trimming the end.
-    function _removeIlk(bytes32 ilk) internal {
+    function _remove(bytes32 ilk) internal {
         // Get the position in the array
         uint256 _index = ilkData[ilk].pos;
         // Get the last ilk in the array
@@ -162,15 +162,15 @@ contract IlkRegistry {
         delete ilkData[ilk];
     }
 
-    function ilkCount() public view returns (uint256) {
+    function count() public view returns (uint256) {
         return ilks.length;
     }
 
-    function getIlks() public view returns (bytes32[] memory) {
+    function get() public view returns (bytes32[] memory) {
         return ilks;
     }
 
-    function getIlks(uint256 start, uint256 end) public view returns (bytes32[] memory) {
+    function get(uint256 start, uint256 end) public view returns (bytes32[] memory) {
         // FIXME errors
         require(start<=end && end < ilks.length, "IlkRegistry/invalid-input");
         bytes32[] memory _ilks = new bytes32[](end-start);
