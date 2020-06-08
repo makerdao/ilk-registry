@@ -170,15 +170,44 @@ contract IlkRegistry {
         return ilks;
     }
 
+    function get(uint256 pos) public view returns (bytes32) {
+        require(pos < count());
+        return ilks[pos];
+    }
+
     function get(uint256 start, uint256 end) public view returns (bytes32[] memory) {
         // FIXME errors
-        require(start<=end && end < ilks.length, "IlkRegistry/invalid-input");
-        bytes32[] memory _ilks = new bytes32[](end-start);
+        require(start <= end && end < count(), "IlkRegistry/invalid-input");
+        bytes32[] memory _ilks = new bytes32[]((end - start) + 1);
         uint256 _count = 0;
         for (uint256 i = start; i <= end; i++) {
             _ilks[_count] = ilks[i];
             _count++;
         }
         return _ilks;
+    }
+
+    function pos(bytes32 ilk) public view returns (uint256) {
+        return ilkData[ilk].pos;
+    }
+
+    function gem(bytes32 ilk) public view returns (address) {
+        return ilkData[ilk].gem;
+    }
+
+    function pip(bytes32 ilk) public view returns (address) {
+        return ilkData[ilk].pip;
+    }
+
+    function join(bytes32 ilk) public view returns (address) {
+        return ilkData[ilk].join;
+    }
+
+    function flip(bytes32 ilk) public view returns (address) {
+        return ilkData[ilk].flip;
+    }
+
+    function dec(bytes32 ilk) public view returns (uint256) {
+        return ilkData[ilk].dec;
     }
 }
