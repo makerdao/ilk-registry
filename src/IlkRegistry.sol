@@ -198,7 +198,7 @@ contract IlkRegistry {
     }
 
     // Get information about an ilk, including name and symbol
-    function getInfo(bytes32 ilk) public view returns (
+    function info(bytes32 ilk) public view returns (
         string memory name, string memory symbol, uint256 dec,
         address gem, address pip, address join, address flip) {
 

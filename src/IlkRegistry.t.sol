@@ -304,12 +304,12 @@ contract IlkRegistryTest is DSTest {
         assertEq(stringToBytes32(registry.symbol(WBTC_A)), stringToBytes32('WBTC'));
     }
 
-    function testGetInfo() public {
+    function testInfo() public {
         registry.add(BAT_JOIN);
         registry.add(WBTC_JOIN);
         registry.add(USDC_A_JOIN);
         (string memory name, string memory symbol, uint256 dec,
-        address gem, address pip, address join, address flip) = registry.getInfo(USDC_A);
+        address gem, address pip, address join, address flip) = registry.info(USDC_A);
 
         assertEq(dec, USDC_A_DEC);
         assertEq(gem, USDC_GEM);
