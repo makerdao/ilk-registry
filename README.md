@@ -20,9 +20,9 @@ Useful for external contracts which need to iterate over the on-chain ilk types 
 
 * Get information from the registry
 
-    * `get()`: return a `bytes32[]` of available ilk types.
+    * `list()`: return a `bytes32[]` of available ilk types.
+    * `list(uint256 start, uint256 end)`: returns a `bytes32[]` of a portion of the complete list.
     * `get(uint256 pos)`: get the `bytes32` ilk type from an indexed position in the array.
-    * `get(uint256 start, uint256 end)`: returns a `bytes32[]` of a portion of the complete list.
     * `count()`: return number of ilks as `uint256`
     * `pos()`: the location in the `ilks` array for this `ilk`
     * `gem()`: the `address` of the ilk's token contract

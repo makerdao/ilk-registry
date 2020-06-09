@@ -185,7 +185,7 @@ contract IlkRegistryTest is DSTest {
         registry.add(WBTC_JOIN);
         registry.add(USDC_A_JOIN);
         registry.add(USDC_B_JOIN);
-        bytes32[] memory ilks = registry.get();
+        bytes32[] memory ilks = registry.list();
         assertEq(ilks.length, 5);
         assertEq(ilks[0], ETH_A);
         assertEq(ilks[1], BAT_A);
@@ -201,20 +201,20 @@ contract IlkRegistryTest is DSTest {
         assertEq(ilk, WBTC_A);
     }
 
-    function testGetPartial() public {
+    function testListPartial() public {
         registry.add(ETH_JOIN);
         registry.add(BAT_JOIN);
         registry.add(WBTC_JOIN);
         registry.add(USDC_A_JOIN);
         registry.add(USDC_B_JOIN);
         registry.add(TUSD_JOIN);
-        bytes32[] memory ilkSliceA = registry.get(2, 4);
+        bytes32[] memory ilkSliceA = registry.list(2, 4);
         assertEq(ilkSliceA.length, 3);
         assertEq(ilkSliceA[0], WBTC_A);
-        bytes32[] memory ilkSliceB = registry.get(0, 0);
+        bytes32[] memory ilkSliceB = registry.list(0, 0);
         assertEq(ilkSliceB.length, 1);
         assertEq(ilkSliceB[0], ETH_A);
-        bytes32[] memory ilkSliceC = registry.get(0, 5);
+        bytes32[] memory ilkSliceC = registry.list(0, 5);
         assertEq(ilkSliceC.length, 6);
         assertEq(ilkSliceC[5], TUSD_A);
     }
@@ -289,7 +289,7 @@ contract IlkRegistryTest is DSTest {
         registry.add(USDC_A_JOIN);
         registry.removeAuth(WBTC_A);
         assertEq(registry.count(), 2);
-        bytes32[] memory ilks = registry.get();
+        bytes32[] memory ilks = registry.list();
         assertEq(ilks[0], BAT_A);
         assertEq(ilks[1], USDC_A);
     }
@@ -302,5 +302,18 @@ contract IlkRegistryTest is DSTest {
     function testSymbol() public {
         registry.add(WBTC_JOIN);
         assertEq(stringToBytes32(registry.symbol(WBTC_A)), stringToBytes32('WBTC'));
+    }
+
+    function testGetInfo() public {
+        registry.add(BAT_JOIN);
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        (string memory name, string memory symbol, uint256 dec,
+        address gem, address pip, address join, address flip) = registry.getInfo(USDC_A);
+
+        assertEq(dec, USDC_A_DEC);
+        assertEq(gem, USDC_GEM);
+        assertEq(pip, USDC_A_PIP);
+        assertEq(join, USDC_A_JOIN);
     }
 }

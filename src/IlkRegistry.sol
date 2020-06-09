@@ -87,6 +87,7 @@ contract IlkRegistry {
     mapping (bytes32 => Ilk) public ilkData;
     bytes32[] ilks;
 
+    // Pass a dss End contract to the registry to initialize
     constructor(address _end) public {
 
         vat = VatLike(EndLike(_end).vat());
@@ -103,6 +104,7 @@ contract IlkRegistry {
         wards[msg.sender] = 1;
     }
 
+    // Pass an active join adapter to the registry to add it to the set
     function add(address _adapter) public {
         JoinLike join = JoinLike(_adapter);
 
@@ -173,18 +175,12 @@ contract IlkRegistry {
     }
 
     // Return an array of the available ilks
-    function get() public view returns (bytes32[] memory) {
+    function list() public view returns (bytes32[] memory) {
         return ilks;
     }
 
-    // Get the ilk at a specific position in the array
-    function get(uint256 pos) public view returns (bytes32) {
-        require(pos < count());
-        return ilks[pos];
-    }
-
     // Get a splice of the available ilks, useful when ilks array is large.
-    function get(uint256 start, uint256 end) public view returns (bytes32[] memory) {
+    function list(uint256 start, uint256 end) public view returns (bytes32[] memory) {
         require(start <= end && end < count(), "IlkRegistry/invalid-input");
         bytes32[] memory _ilks = new bytes32[]((end - start) + 1);
         uint256 _count = 0;
@@ -193,6 +189,21 @@ contract IlkRegistry {
             _count++;
         }
         return _ilks;
+    }
+
+    // Get the ilk at a specific position in the array
+    function get(uint256 pos) public view returns (bytes32) {
+        require(pos < count());
+        return ilks[pos];
+    }
+
+    // Get information about an ilk, including name and symbol
+    function getInfo(bytes32 ilk) public view returns (
+        string memory name, string memory symbol, uint256 dec,
+        address gem, address pip, address join, address flip) {
+
+        return (this.name(ilk), this.symbol(ilk), this.dec(ilk),
+        this.gem(ilk), this.pip(ilk), this.join(ilk), this.flip(ilk));
     }
 
     // The location of the ilk in the ilks array
