@@ -105,7 +105,7 @@ contract IlkRegistry {
     }
 
     // Pass an active join adapter to the registry to add it to the set
-    function add(address _adapter) public {
+    function add(address _adapter) external {
         JoinLike join = JoinLike(_adapter);
 
         // Validate adapter
@@ -138,7 +138,7 @@ contract IlkRegistry {
     }
 
     // Anyone can remove an ilk if the adapter has been caged
-    function remove(bytes32 ilk) public {
+    function remove(bytes32 ilk) external {
         JoinLike join = JoinLike(ilkData[ilk].join);
         require(address(join) != address(0), "IlkRegistry/invalid-ilk");
         require(join.live() == 0, "IlkRegistry/ilk-live");
@@ -147,7 +147,7 @@ contract IlkRegistry {
     }
 
     // Admin can remove an ilk without any precheck
-    function removeAuth(bytes32 ilk) public auth {
+    function removeAuth(bytes32 ilk) external auth {
         _remove(ilk);
         emit RemoveIlk(ilk);
     }
@@ -170,18 +170,18 @@ contract IlkRegistry {
     }
 
     // The number of active ilks
-    function count() public view returns (uint256) {
+    function count() external view returns (uint256) {
         return ilks.length;
     }
 
     // Return an array of the available ilks
-    function list() public view returns (bytes32[] memory) {
+    function list() external view returns (bytes32[] memory) {
         return ilks;
     }
 
     // Get a splice of the available ilks, useful when ilks array is large.
-    function list(uint256 start, uint256 end) public view returns (bytes32[] memory) {
-        require(start <= end && end < count(), "IlkRegistry/invalid-input");
+    function list(uint256 start, uint256 end) external view returns (bytes32[] memory) {
+        require(start <= end && end < ilks.length, "IlkRegistry/invalid-input");
         bytes32[] memory _ilks = new bytes32[]((end - start) + 1);
         uint256 _count = 0;
         for (uint256 i = start; i <= end; i++) {
@@ -192,13 +192,13 @@ contract IlkRegistry {
     }
 
     // Get the ilk at a specific position in the array
-    function get(uint256 pos) public view returns (bytes32) {
-        require(pos < count());
+    function get(uint256 pos) external view returns (bytes32) {
+        require(pos < ilks.length);
         return ilks[pos];
     }
 
     // Get information about an ilk, including name and symbol
-    function info(bytes32 ilk) public view returns (
+    function info(bytes32 ilk) external view returns (
         string memory name, string memory symbol, uint256 dec,
         address gem, address pip, address join, address flip) {
 
@@ -207,42 +207,42 @@ contract IlkRegistry {
     }
 
     // The location of the ilk in the ilks array
-    function pos(bytes32 ilk) public view returns (uint256) {
+    function pos(bytes32 ilk) external view returns (uint256) {
         return ilkData[ilk].pos;
     }
 
     // The token address
-    function gem(bytes32 ilk) public view returns (address) {
+    function gem(bytes32 ilk) external view returns (address) {
         return ilkData[ilk].gem;
     }
 
     // The ilk's price feed
-    function pip(bytes32 ilk) public view returns (address) {
+    function pip(bytes32 ilk) external view returns (address) {
         return ilkData[ilk].pip;
     }
 
     // The ilk's join adapter
-    function join(bytes32 ilk) public view returns (address) {
+    function join(bytes32 ilk) external view returns (address) {
         return ilkData[ilk].join;
     }
 
     // The flipper for the ilk
-    function flip(bytes32 ilk) public view returns (address) {
+    function flip(bytes32 ilk) external view returns (address) {
         return ilkData[ilk].flip;
     }
 
     // The number of decimals on the ilk
-    function dec(bytes32 ilk) public view returns (uint256) {
+    function dec(bytes32 ilk) external view returns (uint256) {
         return ilkData[ilk].dec;
     }
 
     // Return the symbol of the token, if available
-    function symbol(bytes32 ilk) public view returns (string memory) {
+    function symbol(bytes32 ilk) external view returns (string memory) {
         return OptionalTokenLike(ilkData[ilk].gem).symbol();
     }
 
     // Return the name of the token, if available
-    function name(bytes32 ilk) public view returns (string memory) {
+    function name(bytes32 ilk) external view returns (string memory) {
         return OptionalTokenLike(ilkData[ilk].gem).name();
     }
 }
