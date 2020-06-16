@@ -87,9 +87,11 @@ contract IlkRegistryTest is DSTest {
     uint256 constant BAT_DEC     = 18;
 
     bytes32 constant WBTC_A      = bytes32("WBTC-A");
+    address constant WBTC_PIP    = 0xf185d0682d50819263941e5f4EacC763CC5C6C42;
     string  constant WBTC_SYMBOL = "WBTC";
     string  constant WBTC_NAME   = "Wrapped BTC";
     address constant WBTC_JOIN   = 0xBF72Da2Bd84c5170618Fbe5914B0ECA9638d5eb5;
+    uint256 constant WBTC_DEC    = 6;
 
     bytes32 constant USDC_A      = bytes32("USDC-A");
     string  constant USDC_SYMBOL = "USDC";
@@ -311,5 +313,31 @@ contract IlkRegistryTest is DSTest {
         assertEq(pip, USDC_A_PIP);
         assertEq(join, USDC_A_JOIN);
         assertEq(flip, USDC_A_FLIP);
+    }
+
+    function testFileAddress() public {
+        assertEq(registry.pip(WBTC_A), WBTC_PIP);
+        registry.file(WBTC_A, "gem", address(USDC_GEM));
+        registry.file(WBTC_A, "pip", address(USDC_GEM));
+        registry.file(WBTC_A, "join", address(USDC_GEM));
+        registry.file(WBTC_A, "flip", address(USDC_GEM));
+        assertEq(registry.gem(WBTC_A), USDC_GEM);
+        assertEq(registry.pip(WBTC_A), USDC_GEM);
+        assertEq(registry.join(WBTC_A), USDC_GEM);
+        assertEq(registry.flip(WBTC_A), USDC_GEM);
+    }
+
+    function testFailFileAddress() public {
+        registry.file(WBTC_A, "test", address(USDC_GEM));
+    }
+
+    function testFileUint256() public {
+        assertEq(registry.dec(WBTC_A), WBTC_DEC);
+        registry.file(WBTC_A, "dec", BAT_DEC);
+        assertEq(registry.dec(WBTC_A), BAT_DEC);
+    }
+
+    function testFailFileUint256() public {
+        registry.file(WBTC_A, "test", BAT_DEC);
     }
 }
