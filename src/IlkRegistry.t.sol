@@ -87,9 +87,13 @@ contract IlkRegistryTest is DSTest {
     uint256 constant BAT_DEC     = 18;
 
     bytes32 constant WBTC_A      = bytes32("WBTC-A");
+    string  constant WBTC_SYMBOL = "WBTC";
+    string  constant WBTC_NAME   = "Wrapped BTC";
     address constant WBTC_JOIN   = 0xBF72Da2Bd84c5170618Fbe5914B0ECA9638d5eb5;
 
     bytes32 constant USDC_A      = bytes32("USDC-A");
+    string  constant USDC_SYMBOL = "USDC";
+    string  constant USDC_NAME   = "USD//C";
     address constant USDC_GEM    = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     address constant USDC_A_PIP  = 0x77b68899b99b686F415d074278a9a16b336085A0;
     address constant USDC_A_JOIN = 0xA191e578a6736167326d05c119CE0c90849E84B7;
@@ -119,17 +123,6 @@ contract IlkRegistryTest is DSTest {
         hevm = Hevm(address(CHEAT_CODE));
         registry = new IlkRegistry(address(DSS_END));
         spell = new Spell();
-    }
-
-    function stringToBytes32(string memory source) public pure returns (bytes32 result) {
-        bytes memory tempEmptyStringTest = bytes(source);
-        if (tempEmptyStringTest.length == 0) {
-            return 0x0;
-        }
-
-        assembly {
-            result := mload(add(source, 32))
-        }
     }
 
     function vote() private {
@@ -296,12 +289,12 @@ contract IlkRegistryTest is DSTest {
 
     function testName() public {
         registry.add(WBTC_JOIN);
-        assertEq(stringToBytes32(registry.name(WBTC_A)), stringToBytes32('Wrapped BTC'));
+        assertEq(registry.name(WBTC_A), WBTC_NAME);
     }
 
     function testSymbol() public {
         registry.add(WBTC_JOIN);
-        assertEq(stringToBytes32(registry.symbol(WBTC_A)), stringToBytes32('WBTC'));
+        assertEq(registry.symbol(WBTC_A), WBTC_SYMBOL);
     }
 
     function testInfo() public {
@@ -311,9 +304,12 @@ contract IlkRegistryTest is DSTest {
         (string memory name, string memory symbol, uint256 dec,
         address gem, address pip, address join, address flip) = registry.info(USDC_A);
 
+        assertEq(name, USDC_NAME);
+        assertEq(symbol, USDC_SYMBOL);
         assertEq(dec, USDC_A_DEC);
         assertEq(gem, USDC_GEM);
         assertEq(pip, USDC_A_PIP);
         assertEq(join, USDC_A_JOIN);
+        assertEq(flip, USDC_A_FLIP);
     }
 }
