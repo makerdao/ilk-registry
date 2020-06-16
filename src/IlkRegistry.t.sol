@@ -317,10 +317,10 @@ contract IlkRegistryTest is DSTest {
 
     function testFileAddress() public {
         assertEq(registry.pip(WBTC_A), WBTC_PIP);
-        registry.file(WBTC_A, "gem", address(USDC_GEM));
-        registry.file(WBTC_A, "pip", address(USDC_GEM));
-        registry.file(WBTC_A, "join", address(USDC_GEM));
-        registry.file(WBTC_A, "flip", address(USDC_GEM));
+        registry.file(WBTC_A, bytes32("gem"), address(USDC_GEM));
+        registry.file(WBTC_A, bytes32("pip"), address(USDC_GEM));
+        registry.file(WBTC_A, bytes32("join"), address(USDC_GEM));
+        registry.file(WBTC_A, bytes32("flip"), address(USDC_GEM));
         assertEq(registry.gem(WBTC_A), USDC_GEM);
         assertEq(registry.pip(WBTC_A), USDC_GEM);
         assertEq(registry.join(WBTC_A), USDC_GEM);
@@ -328,16 +328,16 @@ contract IlkRegistryTest is DSTest {
     }
 
     function testFailFileAddress() public {
-        registry.file(WBTC_A, "test", address(USDC_GEM));
+        registry.file(WBTC_A, bytes32("test"), address(USDC_GEM));
     }
 
     function testFileUint256() public {
         assertEq(registry.dec(WBTC_A), WBTC_DEC);
-        registry.file(WBTC_A, "dec", BAT_DEC);
+        registry.file(WBTC_A, bytes32("dec"), BAT_DEC);
         assertEq(registry.dec(WBTC_A), BAT_DEC);
     }
 
     function testFailFileUint256() public {
-        registry.file(WBTC_A, "test", BAT_DEC);
+        registry.file(WBTC_A, bytes32("test"), BAT_DEC);
     }
 }
