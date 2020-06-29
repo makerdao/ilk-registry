@@ -152,6 +152,21 @@ contract IlkRegistry {
         emit RemoveIlk(ilk);
     }
 
+    // Authed edit function
+    function file(bytes32 ilk, bytes32 what, address data) external auth {
+        if (what == "gem")       ilkData[ilk].gem  = data;
+        else if (what == "pip")  ilkData[ilk].pip  = data;
+        else if (what == "join") ilkData[ilk].join = data;
+        else if (what == "flip") ilkData[ilk].flip = data;
+        else revert("IlkRegistry/file-unrecognized-param-address");
+    }
+
+    // Authed edit function
+    function file(bytes32 ilk, bytes32 what, uint256 data) external auth {
+        if (what == "dec")       ilkData[ilk].dec  = data;
+        else revert("IlkRegistry/file-unrecognized-param-uint256");
+    }
+
     // Remove ilk from the ilks array by replacing the ilk with the
     //  last in the array and then trimming the end.
     function _remove(bytes32 ilk) internal {
