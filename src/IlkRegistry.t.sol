@@ -85,6 +85,8 @@ contract IlkRegistryTest is DSTest {
     address constant BAT_JOIN    = 0x3D0B1912B66114d4096F48A8CEe3A56C231772cA;
     address constant BAT_FLIP    = 0xaA745404d55f88C108A28c86abE7b5A1E7817c07;
     uint256 constant BAT_DEC     = 18;
+    string  constant BAT_NAME    = "Basic Attention Token";
+    string  constant BAT_SYMBOL  = "BAT";
 
     bytes32 constant WBTC_A      = bytes32("WBTC-A");
     address constant WBTC_PIP    = 0xf185d0682d50819263941e5f4EacC763CC5C6C42;
@@ -160,13 +162,16 @@ contract IlkRegistryTest is DSTest {
         registry.add(ETH_JOIN);
         registry.add(BAT_JOIN);
         (uint256 pos, address gem, address pip, address join,
-        address flip, uint256 dec) = registry.ilkData(BAT_A);
+        address flip, uint256 dec, string memory name,
+        string memory symbol) = registry.ilkData(BAT_A);
         assertEq(pos, 1); // 0-indexed
         assertEq(gem, BAT_GEM);
         assertEq(pip, BAT_PIP);
         assertEq(join, BAT_JOIN);
         assertEq(flip, BAT_FLIP);
         assertEq(dec, BAT_DEC);
+        assertEq(name, BAT_NAME);
+        assertEq(symbol, BAT_SYMBOL);
     }
 
     function testWards() public {
@@ -343,5 +348,22 @@ contract IlkRegistryTest is DSTest {
     function testFailFileUint256() public {
         registry.add(WBTC_JOIN);
         registry.file(WBTC_A, bytes32("test"), BAT_DEC);
+    }
+
+    function testFileString() public {
+        registry.add(BAT_JOIN);
+        // name
+        assertEq(registry.name(BAT_A), BAT_NAME );
+        registry.file(BAT_A, bytes32("name"), "test");
+        assertEq(registry.name(BAT_A), "test");
+        // symbol
+        assertEq(registry.symbol(BAT_A), BAT_SYMBOL );
+        registry.file(BAT_A, bytes32("symbol"), "TES");
+        assertEq(registry.symbol(BAT_A), "TES");
+    }
+
+    function testFailFileString() public {
+        registry.add(BAT_JOIN);
+        registry.file(BAT_A, bytes32("test"), BAT_NAME);
     }
 }
