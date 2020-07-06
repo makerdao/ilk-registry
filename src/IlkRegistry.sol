@@ -82,6 +82,8 @@ contract IlkRegistry {
         address join;  // DSS GemJoin adapter
         address flip;  // Auction contract
         uint256 dec;   // Token decimals
+        string name;   // Token name
+        string symbol; // Token symbol
     }
 
     mapping (bytes32 => Ilk) public ilkData;
@@ -131,7 +133,9 @@ contract IlkRegistry {
             _pip,
             address(join),
             _flip,
-            join.dec()
+            join.dec(),
+            OptionalTokenLike(join.gem()).name(),
+            OptionalTokenLike(join.gem()).symbol()
         );
 
         emit AddIlk(JoinLike(_adapter).ilk());
@@ -165,6 +169,13 @@ contract IlkRegistry {
     function file(bytes32 ilk, bytes32 what, uint256 data) external auth {
         if (what == "dec")       ilkData[ilk].dec  = data;
         else revert("IlkRegistry/file-unrecognized-param-uint256");
+    }
+
+    // Authed edit function
+    function file(bytes32 ilk, bytes32 what, string calldata data) external auth {
+        if (what == "name")        ilkData[ilk].name   = data;
+        else if (what == "symbol") ilkData[ilk].symbol = data;
+        else revert("IlkRegistry/file-unrecognized-param-string");
     }
 
     // Remove ilk from the ilks array by replacing the ilk with the
@@ -214,8 +225,14 @@ contract IlkRegistry {
 
     // Get information about an ilk, including name and symbol
     function info(bytes32 ilk) external view returns (
-        string memory name, string memory symbol, uint256 dec,
-        address gem, address pip, address join, address flip) {
+        string memory name,
+        string memory symbol,
+        uint256 dec,
+        address gem,
+        address pip,
+        address join,
+        address flip
+    ) {
 
         return (this.name(ilk), this.symbol(ilk), this.dec(ilk),
         this.gem(ilk), this.pip(ilk), this.join(ilk), this.flip(ilk));
@@ -253,11 +270,11 @@ contract IlkRegistry {
 
     // Return the symbol of the token, if available
     function symbol(bytes32 ilk) external view returns (string memory) {
-        return OptionalTokenLike(ilkData[ilk].gem).symbol();
+        return ilkData[ilk].symbol;
     }
 
     // Return the name of the token, if available
     function name(bytes32 ilk) external view returns (string memory) {
-        return OptionalTokenLike(ilkData[ilk].gem).name();
+        return ilkData[ilk].name;
     }
 }

@@ -45,6 +45,7 @@ Useful for external contracts which need to iterate over the on-chain ilk types 
 
     * `file(bytes32 ilk, bytes32 what, address)`: Update ilk data values
     * `file(bytes32 ilk, bytes32 what, uint256)`: Update ilk data values
+    * `file(bytes32 ilk, bytes32 what, string calldata)`: Update ilk data values
     * `rely(address)` and `deny(address)`: configure `auth` users
     * `removeAuth(bytes32 ilk)`: remove an uncaged ilk adapter
 
