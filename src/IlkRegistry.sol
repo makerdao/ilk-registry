@@ -90,11 +90,11 @@ contract IlkRegistry {
     bytes32[] ilks;
 
     // Pass a dss End contract to the registry to initialize
-    constructor(address _end) public {
+    constructor(address end) public {
 
-        vat = VatLike(EndLike(_end).vat());
-        cat = CatLike(EndLike(_end).cat());
-        spot = SpotLike(EndLike(_end).spot());
+        vat = VatLike(EndLike(end).vat());
+        cat = CatLike(EndLike(end).cat());
+        spot = SpotLike(EndLike(end).spot());
 
         require(cat.vat() == address(vat), "IlkRegistry/invalid-cat-vat");
         require(spot.vat() == address(vat), "IlkRegistry/invalid-spotter-vat");
@@ -107,8 +107,8 @@ contract IlkRegistry {
     }
 
     // Pass an active join adapter to the registry to add it to the set
-    function add(address _adapter) external {
-        JoinLike join = JoinLike(_adapter);
+    function add(address adapter) external {
+        JoinLike join = JoinLike(adapter);
 
         // Validate adapter
         require(join.vat() == address(vat), "IlkRegistry/invalid-join-adapter-vat");
@@ -126,6 +126,16 @@ contract IlkRegistry {
         require(_flip != address(0), "IlkRegistry/flip-invalid");
         require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
 
+        string memory name;
+        try OptionalTokenLike(join.gem()).name() returns (string memory _name) {
+            name = _name;
+        } catch {}
+
+        string memory symbol;
+        try OptionalTokenLike(join.gem()).symbol() returns (string memory _symbol) {
+            symbol = _symbol;
+        } catch {}
+
         ilks.push(_ilk);
         ilkData[ilks[ilks.length - 1]] = Ilk(
             ilks.length - 1,
@@ -134,11 +144,11 @@ contract IlkRegistry {
             address(join),
             _flip,
             join.dec(),
-            OptionalTokenLike(join.gem()).name(),
-            OptionalTokenLike(join.gem()).symbol()
+            name,
+            symbol
         );
 
-        emit AddIlk(JoinLike(_adapter).ilk());
+        emit AddIlk(_ilk);
     }
 
     // Anyone can remove an ilk if the adapter has been caged
