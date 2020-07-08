@@ -57,6 +57,16 @@ abstract contract OptionalTokenLike {
     function symbol()     public virtual view returns (string memory);
 }
 
+contract IlkInfo {
+    function name(address token) external view returns (string memory) {
+        return OptionalTokenLike(token).name();
+    }
+
+    function symbol(address token) external view returns (string memory) {
+        return OptionalTokenLike(token).symbol();
+    }
+}
+
 contract IlkRegistry {
 
     event Rely(address usr);
@@ -76,6 +86,7 @@ contract IlkRegistry {
     VatLike  public vat;
     CatLike  public cat;
     SpotLike public spot;
+    IlkInfo  private gemInfo;
 
     struct Ilk {
         uint256 pos;   // Index in ilks array
@@ -97,6 +108,8 @@ contract IlkRegistry {
         vat = VatLike(EndLike(end).vat());
         cat = CatLike(EndLike(end).cat());
         spot = SpotLike(EndLike(end).spot());
+
+        gemInfo = new IlkInfo();
 
         require(cat.vat() == address(vat), "IlkRegistry/invalid-cat-vat");
         require(spot.vat() == address(vat), "IlkRegistry/invalid-spotter-vat");
@@ -129,12 +142,12 @@ contract IlkRegistry {
         require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
 
         string memory name;
-        try OptionalTokenLike(join.gem()).name() returns (string memory _name) {
+        try gemInfo.name(join.gem()) returns (string memory _name) {
             name = _name;
         } catch {}
 
         string memory symbol;
-        try OptionalTokenLike(join.gem()).symbol() returns (string memory _symbol) {
+        try gemInfo.symbol(join.gem()) returns (string memory _symbol) {
             symbol = _symbol;
         } catch {}
 
