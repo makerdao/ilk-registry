@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.7;
+pragma solidity ^0.6.11;
 
 abstract contract JoinLike {
   function vat()          public virtual view returns (address);
@@ -57,7 +57,7 @@ abstract contract OptionalTokenLike {
     function symbol()     public virtual view returns (string memory);
 }
 
-contract IlkInfo {
+contract GemInfo {
     function name(address token) external view returns (string memory) {
         return OptionalTokenLike(token).name();
     }
@@ -86,7 +86,7 @@ contract IlkRegistry {
     VatLike  public vat;
     CatLike  public cat;
     SpotLike public spot;
-    IlkInfo  private gemInfo;
+    GemInfo  private gemInfo;
 
     struct Ilk {
         uint256 pos;   // Index in ilks array
@@ -109,7 +109,7 @@ contract IlkRegistry {
         cat = CatLike(EndLike(end).cat());
         spot = SpotLike(EndLike(end).spot());
 
-        gemInfo = new IlkInfo();
+        gemInfo = new GemInfo();
 
         require(cat.vat() == address(vat), "IlkRegistry/invalid-cat-vat");
         require(spot.vat() == address(vat), "IlkRegistry/invalid-spotter-vat");
@@ -141,15 +141,19 @@ contract IlkRegistry {
         require(_flip != address(0), "IlkRegistry/flip-invalid");
         require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
 
-        string memory name;
+        string memory name = bytes32ToStr(_ilk);
         try gemInfo.name(join.gem()) returns (string memory _name) {
-            name = _name;
-        } catch {}
+            if (bytes(_name).length != 0) {
+                name = _name;
+            }
+        } catch { }
 
-        string memory symbol;
+        string memory symbol = bytes32ToStr(_ilk);
         try gemInfo.symbol(join.gem()) returns (string memory _symbol) {
-            symbol = _symbol;
-        } catch {}
+            if (bytes(_symbol).length != 0) {
+                symbol = _symbol;
+            }
+        } catch { }
 
         ilks.push(_ilk);
         ilkData[ilks[ilks.length - 1]] = Ilk(
@@ -258,7 +262,6 @@ contract IlkRegistry {
         address join,
         address flip
     ) {
-
         return (this.name(ilk), this.symbol(ilk), this.dec(ilk),
         this.gem(ilk), this.pip(ilk), this.join(ilk), this.flip(ilk));
     }
@@ -301,5 +304,13 @@ contract IlkRegistry {
     // Return the name of the token, if available
     function name(bytes32 ilk) external view returns (string memory) {
         return ilkData[ilk].name;
+    }
+
+    function bytes32ToStr(bytes32 _bytes32) internal pure returns (string memory) {
+        bytes memory bytesArray = new bytes(32);
+        for (uint256 i; i < 32; i++) {
+            bytesArray[i] = _bytes32[i];
+            }
+        return string(bytesArray);
     }
 }
