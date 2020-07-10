@@ -73,6 +73,8 @@ contract IlkRegistry {
     event Deny(address usr);
     event AddIlk(bytes32 ilk);
     event RemoveIlk(bytes32 ilk);
+    event NameError(bytes32 ilk);
+    event SymbolError(bytes32 ilk);
 
     // --- Auth ---
     mapping (address => uint) public wards;
@@ -146,14 +148,18 @@ contract IlkRegistry {
             if (bytes(_name).length != 0) {
                 name = _name;
             }
-        } catch { }
+        } catch {
+            emit NameError(_ilk);
+        }
 
         string memory symbol = bytes32ToStr(_ilk);
         try gemInfo.symbol(join.gem()) returns (string memory _symbol) {
             if (bytes(_symbol).length != 0) {
                 symbol = _symbol;
             }
-        } catch { }
+        } catch {
+            emit SymbolError(_ilk);
+        }
 
         ilks.push(_ilk);
         ilkData[ilks[ilks.length - 1]] = Ilk(
