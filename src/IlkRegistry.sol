@@ -316,7 +316,7 @@ contract IlkRegistry {
         bytes memory bytesArray = new bytes(32);
         for (uint256 i; i < 32; i++) {
             bytesArray[i] = _bytes32[i];
-            }
+        }
         return string(bytesArray);
     }
 }
