@@ -1,6 +1,12 @@
- # Ilk Registry
+# Ilk Registry
 
- A publicly-modifiable registry of `ilk`'s in the Dai Stablecoin System.
+A publicly-modifiable registry of `ilk`'s in the Dai Stablecoin System.
+
+## Public addresses
+
+Kovan: [0x6618BD7bBaBFacC518Fdec43542E4a73629B0819](https://kovan.etherscan.io/address/0x6618bd7bbabfacc518fdec43542e4a73629b0819)
+
+Mainnet: [0xbe4f921cdfef2cf5080f9cf00cc2c14f1f96bd07](https://etherscan.io/address/0xbe4f921cdfef2cf5080f9cf00cc2c14f1f96bd07)
 
 ## Requirements
 
