@@ -4,30 +4,30 @@ import "ds-test/test.sol";
 
 import "./IlkRegistry.sol";
 
-abstract contract Hevm {
-    function warp(uint256) public virtual;
+interface Hevm {
+    function warp(uint256) external;
 }
 
-abstract contract JoinCageLike {
-    function cage() public virtual;
+interface JoinCageLike {
+    function cage() external;
 }
 
-abstract contract DSPauseAbstract {
-    function delay() public virtual view returns (uint256);
-    function plot(address, bytes32, bytes memory, uint256) public virtual;
-    function exec(address, bytes32, bytes memory, uint256) public virtual returns (bytes memory);
+interface DSPauseAbstract {
+    function delay() external view returns (uint256);
+    function plot(address, bytes32, bytes calldata, uint256) external;
+    function exec(address, bytes32, bytes calldata, uint256) external returns (bytes memory);
 }
 
-abstract contract DSChiefAbstract {
-    function hat() public virtual view returns (address);
-    function lock(uint256) public virtual;
-    function vote(address[] memory) public virtual returns (bytes32);
-    function lift(address) public virtual;
+interface DSChiefAbstract {
+    function hat() external view returns (address);
+    function lock(uint256) external;
+    function vote(address[] calldata) external returns (bytes32);
+    function lift(address) external;
 }
 
-abstract contract DSTokenAbstract {
-    function approve(address, uint256) external virtual returns (bool);
-    function balanceOf(address) external virtual view returns (uint256);
+interface DSTokenAbstract {
+    function approve(address, uint256) external returns (bool);
+    function balanceOf(address) external view returns (uint256);
 }
 
 contract CageSpellAction {
