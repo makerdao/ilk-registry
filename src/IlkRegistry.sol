@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /// IlkRegistry.sol -- Publicly updatable ilk registry
 
 // This program is free software: you can redistribute it and/or modify
@@ -13,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.7;
+pragma solidity ^0.6.11;
 
 abstract contract JoinLike {
   function vat()          public virtual view returns (address);
@@ -55,12 +57,24 @@ abstract contract OptionalTokenLike {
     function symbol()     public virtual view returns (string memory);
 }
 
+contract GemInfo {
+    function name(address token) external view returns (string memory) {
+        return OptionalTokenLike(token).name();
+    }
+
+    function symbol(address token) external view returns (string memory) {
+        return OptionalTokenLike(token).symbol();
+    }
+}
+
 contract IlkRegistry {
 
     event Rely(address usr);
     event Deny(address usr);
     event AddIlk(bytes32 ilk);
     event RemoveIlk(bytes32 ilk);
+    event NameError(bytes32 ilk);
+    event SymbolError(bytes32 ilk);
 
     // --- Auth ---
     mapping (address => uint) public wards;
@@ -74,6 +88,7 @@ contract IlkRegistry {
     VatLike  public vat;
     CatLike  public cat;
     SpotLike public spot;
+    GemInfo  private gemInfo;
 
     struct Ilk {
         uint256 pos;   // Index in ilks array
@@ -90,11 +105,13 @@ contract IlkRegistry {
     bytes32[] ilks;
 
     // Pass a dss End contract to the registry to initialize
-    constructor(address _end) public {
+    constructor(address end) public {
 
-        vat = VatLike(EndLike(_end).vat());
-        cat = CatLike(EndLike(_end).cat());
-        spot = SpotLike(EndLike(_end).spot());
+        vat = VatLike(EndLike(end).vat());
+        cat = CatLike(EndLike(end).cat());
+        spot = SpotLike(EndLike(end).spot());
+
+        gemInfo = new GemInfo();
 
         require(cat.vat() == address(vat), "IlkRegistry/invalid-cat-vat");
         require(spot.vat() == address(vat), "IlkRegistry/invalid-spotter-vat");
@@ -107,8 +124,8 @@ contract IlkRegistry {
     }
 
     // Pass an active join adapter to the registry to add it to the set
-    function add(address _adapter) external {
-        JoinLike join = JoinLike(_adapter);
+    function add(address adapter) external {
+        JoinLike join = JoinLike(adapter);
 
         // Validate adapter
         require(join.vat() == address(vat), "IlkRegistry/invalid-join-adapter-vat");
@@ -126,6 +143,24 @@ contract IlkRegistry {
         require(_flip != address(0), "IlkRegistry/flip-invalid");
         require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
 
+        string memory name = bytes32ToStr(_ilk);
+        try gemInfo.name(join.gem()) returns (string memory _name) {
+            if (bytes(_name).length != 0) {
+                name = _name;
+            }
+        } catch {
+            emit NameError(_ilk);
+        }
+
+        string memory symbol = bytes32ToStr(_ilk);
+        try gemInfo.symbol(join.gem()) returns (string memory _symbol) {
+            if (bytes(_symbol).length != 0) {
+                symbol = _symbol;
+            }
+        } catch {
+            emit SymbolError(_ilk);
+        }
+
         ilks.push(_ilk);
         ilkData[ilks[ilks.length - 1]] = Ilk(
             ilks.length - 1,
@@ -134,11 +169,11 @@ contract IlkRegistry {
             address(join),
             _flip,
             join.dec(),
-            OptionalTokenLike(join.gem()).name(),
-            OptionalTokenLike(join.gem()).symbol()
+            name,
+            symbol
         );
 
-        emit AddIlk(JoinLike(_adapter).ilk());
+        emit AddIlk(_ilk);
     }
 
     // Anyone can remove an ilk if the adapter has been caged
@@ -233,7 +268,6 @@ contract IlkRegistry {
         address join,
         address flip
     ) {
-
         return (this.name(ilk), this.symbol(ilk), this.dec(ilk),
         this.gem(ilk), this.pip(ilk), this.join(ilk), this.flip(ilk));
     }
@@ -276,5 +310,13 @@ contract IlkRegistry {
     // Return the name of the token, if available
     function name(bytes32 ilk) external view returns (string memory) {
         return ilkData[ilk].name;
+    }
+
+    function bytes32ToStr(bytes32 _bytes32) internal pure returns (string memory) {
+        bytes memory bytesArray = new bytes(32);
+        for (uint256 i; i < 32; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
     }
 }
