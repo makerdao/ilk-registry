@@ -17,44 +17,44 @@
 
 pragma solidity ^0.6.7;
 
-abstract contract JoinLike {
-  function vat()          public virtual view returns (address);
-  function ilk()          public virtual view returns (bytes32);
-  function gem()          public virtual view returns (address);
-  function dec()          public virtual view returns (uint256);
-  function live()         public virtual view returns (uint256);
+interface JoinLike {
+  function vat()          external view returns (address);
+  function ilk()          external view returns (bytes32);
+  function gem()          external view returns (address);
+  function dec()          external view returns (uint256);
+  function live()         external view returns (uint256);
 }
 
-abstract contract VatLike {
-  function wards(address) public virtual view returns (uint256);
-  function live()         public virtual view returns (uint256);
+interface VatLike {
+  function wards(address) external view returns (uint256);
+  function live()         external view returns (uint256);
 }
 
-abstract contract CatLike {
-  function vat()          public virtual view returns (address);
-  function live()         public virtual view returns (uint256);
-  function ilks(bytes32)  public virtual view returns (address, uint256, uint256);
+interface CatLike {
+  function vat()          external view returns (address);
+  function live()         external view returns (uint256);
+  function ilks(bytes32)  external view returns (address, uint256, uint256);
 }
 
-abstract contract FlipLike {
-  function vat()          public virtual view returns (address);
+interface FlipLike {
+  function vat()          external view returns (address);
 }
 
-abstract contract SpotLike {
-  function live()         public virtual view returns (uint256);
-  function vat()          public virtual view returns (address);
-  function ilks(bytes32)  public virtual view returns (address, uint256);
+interface SpotLike {
+  function live()         external view returns (uint256);
+  function vat()          external view returns (address);
+  function ilks(bytes32)  external view returns (address, uint256);
 }
 
-abstract contract EndLike {
-    function vat()        public virtual view returns (address);
-    function cat()        public virtual view returns (address);
-    function spot()       public virtual view returns (address);
+interface EndLike {
+    function vat()        external view returns (address);
+    function cat()        external view returns (address);
+    function spot()       external view returns (address);
 }
 
-abstract contract OptionalTokenLike {
-    function name()       public virtual view returns (string memory);
-    function symbol()     public virtual view returns (string memory);
+interface OptionalTokenLike {
+    function name()       external view returns (string memory);
+    function symbol()     external view returns (string memory);
 }
 
 contract GemInfo {
