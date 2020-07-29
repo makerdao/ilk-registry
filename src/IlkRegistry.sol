@@ -92,17 +92,19 @@ contract IlkRegistry {
 
     struct Ilk {
         uint256 pos;   // Index in ilks array
-        address gem;   // The token contract
-        address pip;   // Token price
         address join;  // DSS GemJoin adapter
-        address flip;  // Auction contract
-        uint256 dec;   // Token decimals
-        string name;   // Token name
-        string symbol; // Token symbol
     }
 
     mapping (bytes32 => Ilk) public ilkData;
     bytes32[] ilks;
+
+    // Override functions
+    mapping (bytes32 => address) private flips;
+    mapping (bytes32 => address) private pips;
+    mapping (bytes32 => address) private gems;
+    mapping (bytes32 => uint256) private decs;
+    mapping (bytes32 => string)  private names;
+    mapping (bytes32 => string)  private symbols;
 
     // Pass a dss End contract to the registry to initialize
     constructor(address end) public {
@@ -145,32 +147,28 @@ contract IlkRegistry {
 
         string memory name = bytes32ToStr(_ilk);
         try gemInfo.name(join.gem()) returns (string memory _name) {
-            if (bytes(_name).length != 0) {
-                name = _name;
+            if (bytes(_name).length == 0) {
+                names[_ilk] = name;
             }
         } catch {
+            names[_ilk] = name;
             emit NameError(_ilk);
         }
 
         string memory symbol = bytes32ToStr(_ilk);
         try gemInfo.symbol(join.gem()) returns (string memory _symbol) {
-            if (bytes(_symbol).length != 0) {
-                symbol = _symbol;
+            if (bytes(_symbol).length == 0) {
+                symbols[_ilk] = symbol;
             }
         } catch {
+            symbols[_ilk] = symbol;
             emit SymbolError(_ilk);
         }
 
         ilks.push(_ilk);
         ilkData[ilks[ilks.length - 1]] = Ilk(
             ilks.length - 1,
-            join.gem(),
-            _pip,
-            address(join),
-            _flip,
-            join.dec(),
-            name,
-            symbol
+            address(join)
         );
 
         emit AddIlk(_ilk);
@@ -193,23 +191,23 @@ contract IlkRegistry {
 
     // Authed edit function
     function file(bytes32 ilk, bytes32 what, address data) external auth {
-        if (what == "gem")       ilkData[ilk].gem  = data;
-        else if (what == "pip")  ilkData[ilk].pip  = data;
+        if (what == "gem")       gems[ilk]  = data;
+        else if (what == "pip")  pips[ilk]  = data;
+        else if (what == "flip") flips[ilk] = data;
         else if (what == "join") ilkData[ilk].join = data;
-        else if (what == "flip") ilkData[ilk].flip = data;
         else revert("IlkRegistry/file-unrecognized-param-address");
     }
 
     // Authed edit function
     function file(bytes32 ilk, bytes32 what, uint256 data) external auth {
-        if (what == "dec")       ilkData[ilk].dec  = data;
+        if (what == "dec")       decs[ilk]  = data;
         else revert("IlkRegistry/file-unrecognized-param-uint256");
     }
 
     // Authed edit function
     function file(bytes32 ilk, bytes32 what, string calldata data) external auth {
-        if (what == "name")        ilkData[ilk].name   = data;
-        else if (what == "symbol") ilkData[ilk].symbol = data;
+        if (what == "name")        names[ilk]   = data;
+        else if (what == "symbol") symbols[ilk] = data;
         else revert("IlkRegistry/file-unrecognized-param-string");
     }
 
@@ -278,38 +276,62 @@ contract IlkRegistry {
     }
 
     // The token address
-    function gem(bytes32 ilk) external view returns (address) {
-        return ilkData[ilk].gem;
+    function gem(bytes32 ilk) external view returns (address _gem) {
+        if (gems[ilk] == address(0)) {
+            _gem = JoinLike(this.join(ilk)).gem();
+        } else {
+            _gem = gems[ilk];
+        }
     }
 
     // The ilk's price feed
-    function pip(bytes32 ilk) external view returns (address) {
-        return ilkData[ilk].pip;
+    function pip(bytes32 ilk) external view returns (address _pip) {
+        if (pips[ilk] == address(0)) {
+            (_pip,) = spot.ilks(ilk);
+        } else {
+            _pip = pips[ilk];
+        }
     }
 
     // The ilk's join adapter
-    function join(bytes32 ilk) external view returns (address) {
+    function join(bytes32 ilk) external view returns (address _join) {
         return ilkData[ilk].join;
     }
 
     // The flipper for the ilk
-    function flip(bytes32 ilk) external view returns (address) {
-        return ilkData[ilk].flip;
+    function flip(bytes32 ilk) external view returns (address _flip) {
+        if (flips[ilk] == address(0)) {
+            (_flip,,) = cat.ilks(ilk);
+        } else {
+            _flip = flips[ilk];
+        }
     }
 
     // The number of decimals on the ilk
-    function dec(bytes32 ilk) external view returns (uint256) {
-        return ilkData[ilk].dec;
+    function dec(bytes32 ilk) external view returns (uint256 _dec) {
+        if (decs[ilk] == 0) {
+            _dec = JoinLike(this.join(ilk)).dec();
+        } else {
+            _dec = decs[ilk];
+        }
     }
 
     // Return the symbol of the token, if available
-    function symbol(bytes32 ilk) external view returns (string memory) {
-        return ilkData[ilk].symbol;
+    function symbol(bytes32 ilk) external view returns (string memory _symbol) {
+        if (bytes(symbols[ilk]).length == 0) {
+            _symbol = gemInfo.symbol(this.gem(ilk));
+        } else {
+            _symbol = symbols[ilk];
+        }
     }
 
     // Return the name of the token, if available
-    function name(bytes32 ilk) external view returns (string memory) {
-        return ilkData[ilk].name;
+    function name(bytes32 ilk) external view returns (string memory _name) {
+        if (bytes(names[ilk]).length == 0) {
+            _name = gemInfo.name(this.gem(ilk));
+        } else {
+            _name = names[ilk];
+        }
     }
 
     function bytes32ToStr(bytes32 _bytes32) internal pure returns (string memory) {
