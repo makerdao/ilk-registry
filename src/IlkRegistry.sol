@@ -98,7 +98,7 @@ contract IlkRegistry {
     mapping (bytes32 => Ilk) public ilkData;
     bytes32[] ilks;
 
-    // Override functions
+    // Override mappings
     mapping (bytes32 => address) private flips;
     mapping (bytes32 => address) private pips;
     mapping (bytes32 => address) private gems;
