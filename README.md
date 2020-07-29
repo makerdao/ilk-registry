@@ -38,14 +38,14 @@ Useful for external contracts which need to iterate over the on-chain ilk types 
         * `join`: token join adapter
         * `flip`: ilk flipper
     * `count()`: return number of ilks as `uint256`
-    * `pos()`: the location in the `ilks` array for this `ilk`
-    * `gem()`: the `address` of the ilk's token contract
-    * `pip()`: the `address` of the ilk's pip contract
-    * `join()`: the `address` of the ilk's join adapter
-    * `flip()`: the `address` of the ilk's flipper contract
-    * `dec()`: the number of decimals for an `ilk` as `uint256`
-    * `name()`: the name of the token (if available)
-    * `symbol()`: the token symbol (if available)
+    * `pos(bytes32 ilk)`: the location in the `ilks` array for this `ilk`
+    * `gem(bytes32 ilk)`: the `address` of the ilk's token contract
+    * `pip(bytes32 ilk)`: the `address` of the ilk's pip contract
+    * `join(bytes32 ilk)`: the `address` of the ilk's join adapter
+    * `flip(bytes32 ilk)`: the `address` of the ilk's flipper contract
+    * `dec(bytes32 ilk)`: the number of decimals for an `ilk` as `uint256`
+    * `name(bytes32 ilk)`: the name of the token (if available) as `string`
+    * `symbol(bytes32 ilk)`: the token symbol (if available) as `string`
 
 * `auth` functions (available to MakerDAO governance)
 
