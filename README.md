@@ -23,6 +23,7 @@ Useful for external contracts which need to iterate over the on-chain ilk types 
     * `add(address joinAdapter)`: Add a new ilk to the registry by passing the Join Adapter address. The adapter must be live on mainnet and can not already be included in the registry.
 
     * `remove(bytes32 ilk)`: Remove an ilk from the registry if it's adapter has been caged.
+    * `reset(bytes32 ilk)`: Update the `flip` and `pip` contracts in storage for a given `ilk`.
 
 * Get information from the registry
 
