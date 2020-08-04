@@ -267,8 +267,16 @@ contract IlkRegistry {
         address join,
         address flip
     ) {
-        return (this.name(ilk), this.symbol(ilk), this.dec(ilk),
-        this.gem(ilk), this.pip(ilk), this.join(ilk), this.flip(ilk));
+        Ilk memory _ilk = ilkData[ilk];
+        return (
+            _ilk.name,
+            _ilk.symbol,
+            _ilk.dec,
+            _ilk.gem,
+            _ilk.pip,
+            _ilk.join,
+            _ilk.flip
+        );
     }
 
     // The location of the ilk in the ilks array
