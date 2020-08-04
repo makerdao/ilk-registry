@@ -367,22 +367,22 @@ contract IlkRegistryTest is DSTest {
         registry.file(BAT_A, bytes32("test"), BAT_NAME);
     }
 
-    function testReset() public {
+    function testUpdate() public {
         registry.add(BAT_JOIN);
         assertEq(registry.pip(BAT_A), BAT_PIP);
         assertEq(registry.flip(BAT_A), BAT_FLIP);
-        registry.reset(BAT_A);
+        registry.update(BAT_A);
         assertEq(registry.pip(BAT_A), BAT_PIP);
         assertEq(registry.flip(BAT_A), BAT_FLIP);
     }
 
-    function testResetChanged() public {
+    function testUpdateChanged() public {
         registry.add(BAT_JOIN);
         registry.file(BAT_A, bytes32("pip"), USDC_A_PIP);
         registry.file(BAT_A, bytes32("flip"), USDC_A_FLIP);
         assertEq(registry.pip(BAT_A), USDC_A_PIP);
         assertEq(registry.flip(BAT_A), USDC_A_FLIP);
-        registry.reset(BAT_A);
+        registry.update(BAT_A);
         assertEq(registry.pip(BAT_A), BAT_PIP);
         assertEq(registry.flip(BAT_A), BAT_FLIP);
     }

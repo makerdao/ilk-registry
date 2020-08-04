@@ -73,7 +73,7 @@ contract IlkRegistry {
     event Deny(address usr);
     event AddIlk(bytes32 ilk);
     event RemoveIlk(bytes32 ilk);
-    event ResetIlk(bytes32 ilk);
+    event UpdateIlk(bytes32 ilk);
     event NameError(bytes32 ilk);
     event SymbolError(bytes32 ilk);
 
@@ -314,7 +314,7 @@ contract IlkRegistry {
     }
 
     // Public function to update an ilk's pip and flip if the ilk has been updated.
-    function reset(bytes32 ilk) external {
+    function update(bytes32 ilk) external {
         require(JoinLike(ilkData[ilk].join).vat() == address(vat), "IlkRegistry/invalid-ilk");
         require(JoinLike(ilkData[ilk].join).live() == 1, "IlkRegistry/ilk-not-live-use-remove-instead");
 
@@ -327,7 +327,7 @@ contract IlkRegistry {
 
         ilkData[ilk].pip   = _pip;
         ilkData[ilk].flip  = _flip;
-        emit ResetIlk(ilk);
+        emit UpdateIlk(ilk);
     }
 
     function bytes32ToStr(bytes32 _bytes32) internal pure returns (string memory) {
