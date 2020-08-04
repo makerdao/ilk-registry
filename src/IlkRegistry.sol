@@ -195,9 +195,7 @@ contract IlkRegistry {
     // Authed edit function
     function file(bytes32 ilk, bytes32 what, address data) external auth {
         if (what == "gem")       ilkData[ilk].gem  = data;
-        else if (what == "pip")  ilkData[ilk].pip  = data;
         else if (what == "join") ilkData[ilk].join = data;
-        else if (what == "flip") ilkData[ilk].flip = data;
         else revert("IlkRegistry/file-unrecognized-param-address");
     }
 

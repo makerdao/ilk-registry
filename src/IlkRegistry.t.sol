@@ -30,12 +30,26 @@ interface DSTokenAbstract {
     function balanceOf(address) external view returns (uint256);
 }
 
+interface CatAbstract {
+    function file(bytes32, bytes32, address) external;
+}
+
+interface SpotAbstract {
+    function file(bytes32, bytes32, address) external;
+}
+
 contract CageSpellAction {
     function execute() public {
+
+        // Cage the BAT join adapter for specific test.
         address BAT_JOIN = 0x3D0B1912B66114d4096F48A8CEe3A56C231772cA;
         JoinCageLike joinCage = JoinCageLike(BAT_JOIN);
         // cage it
         joinCage.cage();
+
+        // File the to update the USDC flip and pip for test.
+        CatAbstract(0x78F2c2AF65126834c51822F56Be0d7469D7A523E).file("USDC-A", "flip", 0x5EdF770FC81E7b8C2c89f71F30f211226a4d7495);
+        SpotAbstract(0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3).file("USDC-A", "pip", 0xB4eb54AF9Cc7882DF0121d26c5b97E802915ABe6);
     }
 }
 
@@ -324,13 +338,9 @@ contract IlkRegistryTest is DSTest {
         registry.add(WBTC_JOIN);
         assertEq(registry.pip(WBTC_A), WBTC_PIP);
         registry.file(WBTC_A, bytes32("gem"), address(USDC_GEM));
-        registry.file(WBTC_A, bytes32("pip"), address(USDC_GEM));
         registry.file(WBTC_A, bytes32("join"), address(USDC_GEM));
-        registry.file(WBTC_A, bytes32("flip"), address(USDC_GEM));
         assertEq(registry.gem(WBTC_A), USDC_GEM);
-        assertEq(registry.pip(WBTC_A), USDC_GEM);
         assertEq(registry.join(WBTC_A), USDC_GEM);
-        assertEq(registry.flip(WBTC_A), USDC_GEM);
     }
 
     function testFailFileAddress() public {
@@ -377,13 +387,16 @@ contract IlkRegistryTest is DSTest {
     }
 
     function testUpdateChanged() public {
-        registry.add(BAT_JOIN);
-        registry.file(BAT_A, bytes32("pip"), USDC_A_PIP);
-        registry.file(BAT_A, bytes32("flip"), USDC_A_FLIP);
-        assertEq(registry.pip(BAT_A), USDC_A_PIP);
-        assertEq(registry.flip(BAT_A), USDC_A_FLIP);
-        registry.update(BAT_A);
-        assertEq(registry.pip(BAT_A), BAT_PIP);
-        assertEq(registry.flip(BAT_A), BAT_FLIP);
+        registry.add(USDC_A_JOIN);
+        assertEq(registry.pip(USDC_A), USDC_A_PIP);
+        assertEq(registry.flip(USDC_A), USDC_A_FLIP);
+
+        // Test spell updates to USDC pip and flip to match BAT
+        vote();
+        scheduleWaitAndCast();
+
+        registry.update(USDC_A);
+        assertEq(registry.pip(USDC_A), BAT_PIP);
+        assertEq(registry.flip(USDC_A), BAT_FLIP);
     }
 }
