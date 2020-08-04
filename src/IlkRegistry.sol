@@ -86,10 +86,10 @@ contract IlkRegistry {
         _;
     }
 
-    VatLike  public vat;
-    CatLike  public cat;
-    SpotLike public spot;
-    GemInfo  private gemInfo;
+    VatLike  public immutable vat;
+    CatLike  public immutable cat;
+    SpotLike public immutable spot;
+    GemInfo  private immutable gemInfo;
 
     struct Ilk {
         uint256 pos;   // Index in ilks array
@@ -108,19 +108,19 @@ contract IlkRegistry {
     // Pass a dss End contract to the registry to initialize
     constructor(address end) public {
 
-        vat = VatLike(EndLike(end).vat());
-        cat = CatLike(EndLike(end).cat());
-        spot = SpotLike(EndLike(end).spot());
+        VatLike _vat = vat = VatLike(EndLike(end).vat());
+        CatLike _cat = cat = CatLike(EndLike(end).cat());
+        SpotLike _spot = spot = SpotLike(EndLike(end).spot());
 
         gemInfo = new GemInfo();
 
-        require(cat.vat() == address(vat), "IlkRegistry/invalid-cat-vat");
-        require(spot.vat() == address(vat), "IlkRegistry/invalid-spotter-vat");
-        require(vat.wards(address(cat)) == 1, "IlkRegistry/cat-not-authorized");
-        require(vat.wards(address(spot)) == 1, "IlkRegistry/spot-not-authorized");
-        require(vat.live() == 1, "IlkRegistry/vat-not-live");
-        require(cat.live() == 1, "IlkRegistry/cat-not-live");
-        require(spot.live() == 1, "IlkRegistry/spot-not-live");
+        require(_cat.vat() == address(_vat), "IlkRegistry/invalid-cat-vat");
+        require(_spot.vat() == address(_vat), "IlkRegistry/invalid-spotter-vat");
+        require(_vat.wards(address(_cat)) == 1, "IlkRegistry/cat-not-authorized");
+        require(_vat.wards(address(_spot)) == 1, "IlkRegistry/spot-not-authorized");
+        require(_vat.live() == 1, "IlkRegistry/vat-not-live");
+        require(_cat.live() == 1, "IlkRegistry/cat-not-live");
+        require(_spot.live() == 1, "IlkRegistry/spot-not-live");
         wards[msg.sender] = 1;
     }
 
