@@ -52,18 +52,18 @@ interface EndLike {
     function spot()       external view returns (address);
 }
 
-interface OptionalTokenLike {
+interface TokenLike {
     function name()       external view returns (string memory);
     function symbol()     external view returns (string memory);
 }
 
 contract GemInfo {
     function name(address token) external view returns (string memory) {
-        return OptionalTokenLike(token).name();
+        return TokenLike(token).name();
     }
 
     function symbol(address token) external view returns (string memory) {
-        return OptionalTokenLike(token).symbol();
+        return TokenLike(token).symbol();
     }
 }
 
