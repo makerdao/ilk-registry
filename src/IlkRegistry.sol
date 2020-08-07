@@ -87,9 +87,10 @@ contract IlkRegistry {
     }
 
     VatLike  public immutable vat;
-    CatLike  public immutable cat;
     SpotLike public immutable spot;
     GemInfo  private immutable gemInfo;
+
+    CatLike  public cat;
 
     struct Ilk {
         uint256 pos;   // Index in ilks array
@@ -109,17 +110,18 @@ contract IlkRegistry {
     constructor(address end) public {
 
         VatLike _vat = vat = VatLike(EndLike(end).vat());
-        CatLike _cat = cat = CatLike(EndLike(end).cat());
         SpotLike _spot = spot = SpotLike(EndLike(end).spot());
+
+        cat = CatLike(EndLike(end).cat());
 
         gemInfo = new GemInfo();
 
-        require(_cat.vat() == address(_vat), "IlkRegistry/invalid-cat-vat");
+        require(cat.vat() == address(_vat), "IlkRegistry/invalid-cat-vat");
         require(_spot.vat() == address(_vat), "IlkRegistry/invalid-spotter-vat");
-        require(_vat.wards(address(_cat)) == 1, "IlkRegistry/cat-not-authorized");
+        require(_vat.wards(address(cat)) == 1, "IlkRegistry/cat-not-authorized");
         require(_vat.wards(address(_spot)) == 1, "IlkRegistry/spot-not-authorized");
         require(_vat.live() == 1, "IlkRegistry/vat-not-live");
-        require(_cat.live() == 1, "IlkRegistry/cat-not-live");
+        require(cat.live() == 1, "IlkRegistry/cat-not-live");
         require(_spot.live() == 1, "IlkRegistry/spot-not-live");
         wards[msg.sender] = 1;
     }
@@ -190,6 +192,12 @@ contract IlkRegistry {
     function removeAuth(bytes32 ilk) external auth {
         _remove(ilk);
         emit RemoveIlk(ilk);
+    }
+
+    // Authed edit function
+    function file(bytes32 what, address data) external auth {
+        if (what == "cat")  cat = CatLike(data);
+        else revert("IlkRegistry/file-unrecognized-param-address");
     }
 
     // Authed edit function

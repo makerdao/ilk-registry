@@ -89,6 +89,7 @@ contract IlkRegistryTest is DSTest {
     address constant TEST_ADDR   = 0x8EE7D9235e01e6B42345120b5d270bdB763624C7;
 
     address constant DSS_END     = 0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5;
+    address constant DSS_CAT     = 0x78F2c2AF65126834c51822F56Be0d7469D7A523E;
 
     address constant ETH_JOIN    = 0x2F0b23f53734252Bda2277357e97e1517d6B042A;
     bytes32 constant ETH_A       = bytes32("ETH-A");
@@ -341,6 +342,13 @@ contract IlkRegistryTest is DSTest {
         registry.file(WBTC_A, bytes32("join"), address(USDC_GEM));
         assertEq(registry.gem(WBTC_A), USDC_GEM);
         assertEq(registry.join(WBTC_A), USDC_GEM);
+    }
+
+    function testFileCat() public {
+        registry.add(WBTC_JOIN);
+        assertEq(address(registry.cat()), DSS_CAT);
+        registry.file(bytes32("cat"), address(USDC_GEM));
+        assertEq(address(registry.cat()), USDC_GEM);
     }
 
     function testFailFileAddress() public {
