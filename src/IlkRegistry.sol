@@ -52,18 +52,18 @@ interface EndLike {
     function spot()       external view returns (address);
 }
 
-interface OptionalTokenLike {
+interface TokenLike {
     function name()       external view returns (string memory);
     function symbol()     external view returns (string memory);
 }
 
 contract GemInfo {
     function name(address token) external view returns (string memory) {
-        return OptionalTokenLike(token).name();
+        return TokenLike(token).name();
     }
 
     function symbol(address token) external view returns (string memory) {
-        return OptionalTokenLike(token).symbol();
+        return TokenLike(token).symbol();
     }
 }
 
@@ -73,6 +73,7 @@ contract IlkRegistry {
     event Deny(address usr);
     event AddIlk(bytes32 ilk);
     event RemoveIlk(bytes32 ilk);
+    event UpdateIlk(bytes32 ilk);
     event NameError(bytes32 ilk);
     event SymbolError(bytes32 ilk);
 
@@ -85,10 +86,10 @@ contract IlkRegistry {
         _;
     }
 
-    VatLike  public vat;
-    CatLike  public cat;
-    SpotLike public spot;
-    GemInfo  private gemInfo;
+    VatLike  public immutable vat;
+    CatLike  public immutable cat;
+    SpotLike public immutable spot;
+    GemInfo  private immutable gemInfo;
 
     struct Ilk {
         uint256 pos;   // Index in ilks array
@@ -107,19 +108,19 @@ contract IlkRegistry {
     // Pass a dss End contract to the registry to initialize
     constructor(address end) public {
 
-        vat = VatLike(EndLike(end).vat());
-        cat = CatLike(EndLike(end).cat());
-        spot = SpotLike(EndLike(end).spot());
+        VatLike _vat = vat = VatLike(EndLike(end).vat());
+        CatLike _cat = cat = CatLike(EndLike(end).cat());
+        SpotLike _spot = spot = SpotLike(EndLike(end).spot());
 
         gemInfo = new GemInfo();
 
-        require(cat.vat() == address(vat), "IlkRegistry/invalid-cat-vat");
-        require(spot.vat() == address(vat), "IlkRegistry/invalid-spotter-vat");
-        require(vat.wards(address(cat)) == 1, "IlkRegistry/cat-not-authorized");
-        require(vat.wards(address(spot)) == 1, "IlkRegistry/spot-not-authorized");
-        require(vat.live() == 1, "IlkRegistry/vat-not-live");
-        require(cat.live() == 1, "IlkRegistry/cat-not-live");
-        require(spot.live() == 1, "IlkRegistry/spot-not-live");
+        require(_cat.vat() == address(_vat), "IlkRegistry/invalid-cat-vat");
+        require(_spot.vat() == address(_vat), "IlkRegistry/invalid-spotter-vat");
+        require(_vat.wards(address(_cat)) == 1, "IlkRegistry/cat-not-authorized");
+        require(_vat.wards(address(_spot)) == 1, "IlkRegistry/spot-not-authorized");
+        require(_vat.live() == 1, "IlkRegistry/vat-not-live");
+        require(_cat.live() == 1, "IlkRegistry/cat-not-live");
+        require(_spot.live() == 1, "IlkRegistry/spot-not-live");
         wards[msg.sender] = 1;
     }
 
@@ -194,9 +195,7 @@ contract IlkRegistry {
     // Authed edit function
     function file(bytes32 ilk, bytes32 what, address data) external auth {
         if (what == "gem")       ilkData[ilk].gem  = data;
-        else if (what == "pip")  ilkData[ilk].pip  = data;
         else if (what == "join") ilkData[ilk].join = data;
-        else if (what == "flip") ilkData[ilk].flip = data;
         else revert("IlkRegistry/file-unrecognized-param-address");
     }
 
@@ -268,8 +267,16 @@ contract IlkRegistry {
         address join,
         address flip
     ) {
-        return (this.name(ilk), this.symbol(ilk), this.dec(ilk),
-        this.gem(ilk), this.pip(ilk), this.join(ilk), this.flip(ilk));
+        Ilk memory _ilk = ilkData[ilk];
+        return (
+            _ilk.name,
+            _ilk.symbol,
+            _ilk.dec,
+            _ilk.gem,
+            _ilk.pip,
+            _ilk.join,
+            _ilk.flip
+        );
     }
 
     // The location of the ilk in the ilks array
@@ -310,6 +317,23 @@ contract IlkRegistry {
     // Return the name of the token, if available
     function name(bytes32 ilk) external view returns (string memory) {
         return ilkData[ilk].name;
+    }
+
+    // Public function to update an ilk's pip and flip if the ilk has been updated.
+    function update(bytes32 ilk) external {
+        require(JoinLike(ilkData[ilk].join).vat() == address(vat), "IlkRegistry/invalid-ilk");
+        require(JoinLike(ilkData[ilk].join).live() == 1, "IlkRegistry/ilk-not-live-use-remove-instead");
+
+        (address _pip,) = spot.ilks(ilk);
+        require(_pip != address(0), "IlkRegistry/pip-invalid");
+
+        (address _flip,,) = cat.ilks(ilk);
+        require(_flip != address(0), "IlkRegistry/flip-invalid");
+        require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
+
+        ilkData[ilk].pip   = _pip;
+        ilkData[ilk].flip  = _flip;
+        emit UpdateIlk(ilk);
     }
 
     function bytes32ToStr(bytes32 _bytes32) internal pure returns (string memory) {
