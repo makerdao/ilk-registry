@@ -1,11 +1,25 @@
 pragma solidity ^0.6.7;
 
 import "ds-test/test.sol";
+import "ds-token/token.sol";
+import "ds-value/value.sol";
+
+import {Vat}     from 'dss/vat.sol';
+import {End}     from 'dss/end.sol';
+import {Vow}     from 'dss/vow.sol';
+import {Cat}     from 'dss/cat.sol';
+import {Spotter} from 'dss/spot.sol';
+import {PipLike} from 'dss/spot.sol';
+import {Flipper} from 'dss/flip.sol';
+import {Flapper} from 'dss/flap.sol';
+import {Flopper} from 'dss/flop.sol';
+import {GemJoin} from 'dss/join.sol';
 
 import "./IlkRegistry.sol";
 
 interface Hevm {
     function warp(uint256) external;
+    function store(address,bytes32,bytes32) external;
 }
 
 interface JoinCageLike {
@@ -70,7 +84,7 @@ contract Spell {
     }
 }
 
-contract IlkRegistryTest is DSTest {
+contract MainnetIlkRegistryTest is DSTest {
 
     address constant TEST_ADDR   = 0x8EE7D9235e01e6B42345120b5d270bdB763624C7;
 
@@ -113,10 +127,9 @@ contract IlkRegistryTest is DSTest {
     IlkRegistry public registry;
 
     Spell public spell;
-    DSPauseAbstract pause =
-        DSPauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
-    DSChiefAbstract chief  = DSChiefAbstract(0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5);
-    DSTokenAbstract gov    = DSTokenAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
+    DSPauseAbstract pause = DSPauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
+    DSChiefAbstract chief = DSChiefAbstract(0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5);
+    DSTokenAbstract gov   = DSTokenAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
 
     Hevm hevm;
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
@@ -367,3 +380,307 @@ contract IlkRegistryTest is DSTest {
         registry.file(BAT_A, bytes32("test"), BAT_NAME);
     }
 }
+
+contract DssIlkRegistryTest is DSTest {
+    Hevm hevm;
+
+    Vat vat;
+    End end;
+    Vow vow;
+    Cat cat;
+    Spotter spot;
+
+    IlkRegistry public registry;
+
+    struct Ilk {
+        address pip;
+        address gem;
+        address join;
+        address flip;
+    }
+
+    mapping (bytes32 => Ilk) ilks;
+
+    uint constant WAD = 10 ** 18;
+    uint constant RAY = 10 ** 27;
+
+    function ray(uint wad) internal pure returns (uint) {
+        return wad * 10 ** 9;
+    }
+    function rad(uint wad) internal pure returns (uint) {
+        return wad * RAY;
+    }
+
+    function initCollateral(bytes32 name) internal returns (Ilk memory) {
+        DSToken coin = new DSToken(name);
+        coin.mint(20 ether);
+
+        vat.init(name);
+        vat.file(name, "line", rad(1000 ether));
+        GemJoin join = new GemJoin(address(vat), name, address(coin));
+        vat.rely(address(join));
+
+        coin.approve(address(join));
+        coin.approve(address(vat));
+
+        DSValue pip = new DSValue();
+        pip.poke(bytes32(5 * WAD));             // Set price to $5
+
+        spot.file(name, "pip", address(pip));
+        // spot.file(name, "mat", ray(1.5 ether)); // Set collat. ratio to 150%
+        // spot.poke(name);
+
+        Flipper flip = new Flipper(address(vat), name);
+        vat.hope(address(flip));
+        flip.rely(address(cat));
+        cat.file(name, "flip", address(flip));
+        // cat.file(name, "chop", ray(1.1 ether)); // Set liquidation penalty to 10%
+        // cat.file(name, "lump", rad(15 ether));  // Will need to be updated to dunk
+
+        ilks[name].pip  = address(pip);
+        ilks[name].gem  = address(coin);
+        ilks[name].join = address(join);
+        ilks[name].flip = address(flip);
+        ilks[name].dec = join.dec();
+    }
+
+    function setUp() public {
+        hevm = Hevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+        hevm.warp(604411200);
+
+        vat  = new Vat();
+        cat  = new Cat(address(vat));
+        spot = new Spotter(address(vat));
+
+        vat.rely(address(cat));
+        vat.rely(address(spot));
+
+        end = new End();
+        end.file("vat",  address(vat));
+        end.file("cat",  address(cat));
+        end.file("spot", address(spot));
+
+        initCollateral("ETH-A");
+        initCollateral("BAT-A");
+
+        registry = new IlkRegistry(address(end));
+    }
+
+    function testAddIlk_dss() public {
+        assertEq(registry.count(), 0);
+        registry.add(ilks["ETH-A"].join);
+        registry.add(ilks["BAT-A"].join);
+        assertEq(registry.count(), 2);
+    }
+
+    function testIlkData_dss() public {
+        registry.add(ilks["ETH-A"].join);
+        registry.add(ilks["BAT-A"].join);
+        (uint256 pos, address gem, address pip, address join,
+        address flip, uint256 dec, string memory name,
+        string memory symbol) = registry.ilkData(BAT_A);
+        assertEq(pos, 1); // 0-indexed
+        assertEq(gem,    ilks["BAT-A"].gem);
+        assertEq(pip,    ilks["BAT-A"].pip);
+        assertEq(join,   ilks["BAT-A"].join);
+        assertEq(flip,   ilks["BAT-A"].flip);
+        assertEq(dec,    ilks["BAT-A"].dec);
+        assertEq(name,   ilks["BAT-A"].name);
+        assertEq(symbol, ilks["BAT-A"].symbol);
+    }
+
+    function testWards_dss() public {
+        assertEq(registry.wards(TEST_ADDR), 1);
+        assertEq(registry.wards(DSS_END), 0);
+    }
+
+    function testIlks_dss() public {
+        registry.add(ilks["ETH-A"].join);
+        registry.add(ilks["BAT-A"].join);
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        registry.add(USDC_B_JOIN);
+        bytes32[] memory ilks = registry.list();
+        assertEq(ilks.length, 5);
+        assertEq(ilks[0], ETH_A);
+        assertEq(ilks[1], BAT_A);
+        assertEq(ilks[2], WBTC_A);
+        assertEq(ilks[3], USDC_A);
+        assertEq(ilks[4], USDC_B);
+    }
+
+    function testIlksPos_dss() public {
+        registry.add(ilks["ETH-A"].join);
+        registry.add(WBTC_JOIN);
+        bytes32 ilk = registry.get(1);
+        assertEq(ilk, WBTC_A);
+    }
+
+    function testListPartial_dss() public {
+        registry.add(ilks["ETH-A"].join);
+        registry.add(ilks["BAT-A"].join);
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        registry.add(USDC_B_JOIN);
+        registry.add(TUSD_JOIN);
+        bytes32[] memory ilkSliceA = registry.list(2, 4);
+        assertEq(ilkSliceA.length, 3);
+        assertEq(ilkSliceA[0], WBTC_A);
+        bytes32[] memory ilkSliceB = registry.list(0, 0);
+        assertEq(ilkSliceB.length, 1);
+        assertEq(ilkSliceB[0], ETH_A);
+        bytes32[] memory ilkSliceC = registry.list(0, 5);
+        assertEq(ilkSliceC.length, 6);
+        assertEq(ilkSliceC[5], TUSD_A);
+    }
+
+    function testPos_dss() public {
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        assertEq(registry.pos(USDC_A), 1);
+    }
+
+    function testGem_dss() public {
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        assertEq(registry.gem(USDC_A), USDC_GEM);
+    }
+
+    function testPip_dss() public {
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        assertEq(registry.pip(USDC_A), USDC_A_PIP);
+    }
+
+    function testJoin_dss() public {
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        assertEq(registry.join(USDC_A), USDC_A_JOIN);
+    }
+
+    function testFlip_dss() public {
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        assertEq(registry.flip(USDC_A), USDC_A_FLIP);
+    }
+
+    function testDec_dss() public {
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        registry.add(ilks["ETH-A"].join);
+        assertEq(registry.dec(USDC_A), 6);
+        assertEq(registry.dec(ETH_A), 18);
+    }
+
+    function testFailRemoveLive_dss() public {
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        registry.remove(WBTC_A);
+    }
+
+    function testRemoveCaged_dss() public {
+        registry.add(ilks["BAT-A"].join);
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+
+        JoinLike batJoin = JoinLike(ilks["BAT-A"].join);
+
+        assertEq(registry.count(), 3);
+        assertEq(batJoin.live(), 1);
+
+        // Cage the BAT adapter so we can test removing it
+        vote();
+        scheduleWaitAndCast();
+
+        assertEq(batJoin.live(), 0);
+
+        registry.remove(BAT_A);
+        assertEq(registry.count(), 2);
+    }
+
+    function testAuthRemoveLive_dss() public {
+        registry.add(ilks["BAT-A"].join);
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        registry.removeAuth(WBTC_A);
+        assertEq(registry.count(), 2);
+        bytes32[] memory ilks = registry.list();
+        assertEq(ilks[0], BAT_A);
+        assertEq(ilks[1], USDC_A);
+    }
+
+    function testName_dss() public {
+        registry.add(WBTC_JOIN);
+        assertEq(registry.name(WBTC_A), WBTC_NAME);
+    }
+
+    function testSymbol_dss() public {
+        registry.add(WBTC_JOIN);
+        assertEq(registry.symbol(WBTC_A), WBTC_SYMBOL);
+    }
+
+    function testInfo_dss() public {
+        registry.add(ilks["BAT-A"].join);
+        registry.add(WBTC_JOIN);
+        registry.add(USDC_A_JOIN);
+        (string memory name, string memory symbol, uint256 dec,
+        address gem, address pip, address join, address flip) = registry.info(USDC_A);
+
+        assertEq(name, USDC_NAME);
+        assertEq(symbol, USDC_SYMBOL);
+        assertEq(dec, USDC_A_DEC);
+        assertEq(gem, USDC_GEM);
+        assertEq(pip, USDC_A_PIP);
+        assertEq(join, USDC_A_JOIN);
+        assertEq(flip, USDC_A_FLIP);
+    }
+
+    function testFileAddress_dss() public {
+        registry.add(WBTC_JOIN);
+        assertEq(registry.pip(WBTC_A), WBTC_PIP);
+        registry.file(WBTC_A, bytes32("gem"), address(USDC_GEM));
+        registry.file(WBTC_A, bytes32("pip"), address(USDC_GEM));
+        registry.file(WBTC_A, bytes32("join"), address(USDC_GEM));
+        registry.file(WBTC_A, bytes32("flip"), address(USDC_GEM));
+        assertEq(registry.gem(WBTC_A), USDC_GEM);
+        assertEq(registry.pip(WBTC_A), USDC_GEM);
+        assertEq(registry.join(WBTC_A), USDC_GEM);
+        assertEq(registry.flip(WBTC_A), USDC_GEM);
+    }
+
+    function testFailFileAddress_dss() public {
+        registry.add(WBTC_JOIN);
+        registry.file(WBTC_A, bytes32("test"), address(USDC_GEM));
+    }
+
+    function testFileUint256_dss() public {
+        registry.add(WBTC_JOIN);
+        assertEq(registry.dec(WBTC_A), WBTC_DEC);
+        registry.file(WBTC_A, bytes32("dec"), BAT_DEC);
+        assertEq(registry.dec(WBTC_A), BAT_DEC);
+    }
+
+    function testFailFileUint256_dss() public {
+        registry.add(WBTC_JOIN);
+        registry.file(WBTC_A, bytes32("test"), BAT_DEC);
+    }
+
+    function testFileString_dss() public {
+        registry.add(ilks["BAT-A"].join);
+        // name
+        assertEq(registry.name(BAT_A), BAT_NAME );
+        registry.file(BAT_A, bytes32("name"), "test");
+        assertEq(registry.name(BAT_A), "test");
+        // symbol
+        assertEq(registry.symbol(BAT_A), BAT_SYMBOL );
+        registry.file(BAT_A, bytes32("symbol"), "TES");
+        assertEq(registry.symbol(BAT_A), "TES");
+    }
+
+    function testFailFileString_dss() public {
+        registry.add(ilks["BAT-A"].join);
+        registry.file(BAT_A, bytes32("test"), BAT_NAME);
+    }
+}
+
+
