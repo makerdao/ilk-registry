@@ -425,29 +425,20 @@ contract DssIlkRegistryTest is DSTest {
 
     function initCollateral(bytes32 name) internal returns (Ilk memory) {
         DSToken coin = new DSToken(name);
+        coin.setName(name);
         coin.mint(20 ether);
 
         vat.init(name);
-        vat.file(name, "line", rad(1000 ether));
         GemJoin join = new GemJoin(address(vat), name, address(coin));
         vat.rely(address(join));
 
-        coin.approve(address(join));
-        coin.approve(address(vat));
-
         DSValue pip = new DSValue();
-        pip.poke(bytes32(5 * WAD));             // Set price to $5
-
         spot.file(name, "pip", address(pip));
-        // spot.file(name, "mat", ray(1.5 ether)); // Set collat. ratio to 150%
-        // spot.poke(name);
 
         Flipper flip = new Flipper(address(vat), name);
         vat.hope(address(flip));
         flip.rely(address(cat));
         cat.file(name, "flip", address(flip));
-        // cat.file(name, "chop", ray(1.1 ether)); // Set liquidation penalty to 10%
-        // cat.file(name, "lump", rad(15 ether));  // Will need to be updated to dunk
 
         ilks[name].ilk    = name;
         ilks[name].pip    = address(pip);
@@ -456,13 +447,10 @@ contract DssIlkRegistryTest is DSTest {
         ilks[name].flip   = address(flip);
         ilks[name].dec    = join.dec();
         ilks[name].name   = bytes32ToStr(name);
-        ilks[name].symbol = bytes32ToStr(symbol);
+        ilks[name].symbol = bytes32ToStr(name);
     }
 
     function setUp() public {
-        hevm = Hevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
-        hevm.warp(604411200);
-
         vat  = new Vat();
         cat  = new Cat(address(vat));
         spot = new Spotter(address(vat));
@@ -496,7 +484,7 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["BAT-A"].join);
         (uint256 pos, address gem, address pip, address join,
         address flip, uint256 dec, string memory name,
-        string memory symbol) = registry.ilkData(BAT_A);
+        string memory symbol) = registry.ilkData(ilks["BAT-A"].ilk);
         assertEq(pos, 1); // 0-indexed
         assertEq(gem,    ilks["BAT-A"].gem);
         assertEq(pip,    ilks["BAT-A"].pip);
@@ -518,13 +506,13 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["WBTC-A"].join);
         registry.add(ilks["USDC-A"].join);
         registry.add(ilks["USDC-B"].join);
-        bytes32[] memory ilks = registry.list();
-        assertEq(ilks.length, 5);
-        assertEq(ilks[0], ilks["ETH-A"].ilk);
-        assertEq(ilks[1], ilks["BAT-A"].ilk);
-        assertEq(ilks[2], ilks["WBTC-A"].ilk);
-        assertEq(ilks[3], ilks["USDC-A"].ilk);
-        assertEq(ilks[4], ilks["USDC-B"].ilk);
+        bytes32[] memory regIlks = registry.list();
+        assertEq(regIlks.length, 5);
+        assertEq(regIlks[0], ilks["ETH-A"].ilk);
+        assertEq(regIlks[1], ilks["BAT-A"].ilk);
+        assertEq(regIlks[2], ilks["WBTC-A"].ilk);
+        assertEq(regIlks[3], ilks["USDC-A"].ilk);
+        assertEq(regIlks[4], ilks["USDC-B"].ilk);
     }
 
     function testIlksPos_dss() public {
@@ -544,8 +532,8 @@ contract DssIlkRegistryTest is DSTest {
         bytes32[] memory ilkSliceA = registry.list(1, 3);
         assertEq(ilkSliceA.length, 3);
         assertEq(ilkSliceA[0], ilks["BAT-A"].ilk);
-        assertEq(ilkSliceA[0], ilks["WBTC-A"].ilk);
-        assertEq(ilkSliceA[0], ilks["USDC-A"].ilk);
+        assertEq(ilkSliceA[1], ilks["WBTC-A"].ilk);
+        assertEq(ilkSliceA[2], ilks["USDC-A"].ilk);
 
         bytes32[] memory ilkSliceB = registry.list(0, 0);
         assertEq(ilkSliceB.length, 1);
@@ -553,7 +541,7 @@ contract DssIlkRegistryTest is DSTest {
 
         bytes32[] memory ilkSliceC = registry.list(4, 4);
         assertEq(ilkSliceC.length, 1);
-        assertEq(ilkSliceC[5], ilks["USDC-B"].ilk);
+        assertEq(ilkSliceC[0], ilks["USDC-B"].ilk);
     }
 
     function testPos_dss() public {
@@ -565,7 +553,7 @@ contract DssIlkRegistryTest is DSTest {
     function testGem_dss() public {
         registry.add(ilks["WBTC-A"].join);
         registry.add(ilks["USDC-A"].join);
-        assertEq(registry.gem(USDC_A), USDC_GEM);
+        assertEq(registry.gem(ilks["USDC-A"].ilk), ilks["USDC-A"].gem);
     }
 
     function testPip_dss() public {
@@ -605,18 +593,17 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["WBTC-A"].join);
         registry.add(ilks["USDC-A"].join);
 
-        JoinLike batJoin = JoinLike(ilks["BAT-A"].join);
+        GemJoin batJoin = GemJoin(ilks["BAT-A"].join);
 
         assertEq(registry.count(), 3);
         assertEq(batJoin.live(), 1);
 
         // Cage the BAT adapter so we can test removing it
-        vote();
-        scheduleWaitAndCast();
+        batJoin.cage();
 
         assertEq(batJoin.live(), 0);
 
-        registry.remove(ilks["BAT-A"].join);
+        registry.remove(ilks["BAT-A"].ilk);
         assertEq(registry.count(), 2);
     }
 
@@ -624,11 +611,15 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["BAT-A"].join);
         registry.add(ilks["WBTC-A"].join);
         registry.add(ilks["USDC-A"].join);
+        assertEq(registry.count(), 3);
+
         registry.removeAuth(ilks["WBTC-A"].ilk);
+
         assertEq(registry.count(), 2);
-        bytes32[] memory ilks = registry.list();
-        assertEq(ilks[0], ilks["BAT-A"].ilk);
-        assertEq(ilks[1], ilks["USDC-A"].ilk);
+        bytes32[] memory regIlks = registry.list();
+        assertEq(regIlks.length, 2);
+        assertEq(regIlks[0], ilks["BAT-A"].ilk);
+        assertEq(regIlks[1], ilks["USDC-A"].ilk);
     }
 
     function testName_dss() public {
@@ -646,7 +637,7 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["WBTC-A"].join);
         registry.add(ilks["USDC-A"].join);
         (string memory name, string memory symbol, uint256 dec,
-        address gem, address pip, address join, address flip) = registry.info(USDC_A);
+        address gem, address pip, address join, address flip) = registry.info(ilks["USDC-A"].ilk);
 
         assertEq(name,   ilks["USDC-A"].name);
         assertEq(symbol, ilks["USDC-A"].symbol);
@@ -661,13 +652,13 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["WBTC-A"].join);
         assertEq(registry.pip(ilks["WBTC-A"].ilk), ilks["WBTC-A"].pip);
 
-        registry.file(ilks["WBTC-A"].ilk, bytes32("gem"), address(ilks["USDC-A"].gem));
-        registry.file(ilks["WBTC-A"].ilk, bytes32("pip"), address(ilks["USDC-A"].gem));
+        registry.file(ilks["WBTC-A"].ilk, bytes32("gem"),  address(ilks["USDC-A"].gem));
+        registry.file(ilks["WBTC-A"].ilk, bytes32("pip"),  address(ilks["USDC-A"].gem));
         registry.file(ilks["WBTC-A"].ilk, bytes32("join"), address(ilks["USDC-A"].gem));
         registry.file(ilks["WBTC-A"].ilk, bytes32("flip"), address(ilks["USDC-A"].gem));
 
-        assertEq(registry.gem(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
-        assertEq(registry.pip(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
+        assertEq(registry.gem(ilks["WBTC-A"].ilk),  ilks["USDC-A"].gem);
+        assertEq(registry.pip(ilks["WBTC-A"].ilk),  ilks["USDC-A"].gem);
         assertEq(registry.join(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
         assertEq(registry.flip(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
     }
@@ -680,8 +671,8 @@ contract DssIlkRegistryTest is DSTest {
     function testFileUint256_dss() public {
         registry.add(ilks["WBTC-A"].join);
         assertEq(registry.dec(ilks["WBTC-A"].ilk), ilks["WBTC-A"].dec);
-        registry.file(ilks["WBTC-A"].ilk, bytes32("dec"), ilks["BAT-A"].dec);
-        assertEq(registry.dec(ilks["WBTC-A"].join), ilks["BAT-A"].dec);
+        registry.file(ilks["WBTC-A"].ilk, bytes32("dec"), 1);
+        assertEq(registry.dec(ilks["WBTC-A"].ilk), 1);
     }
 
     function testFailFileUint256_dss() public {
@@ -693,12 +684,12 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["BAT-A"].join);
         // name
         assertEq(registry.name(ilks["BAT-A"].ilk), ilks["BAT-A"].name);
-        registry.file(ilks["WBTC-A"].ilk, bytes32("name"), "test");
+        registry.file(ilks["BAT-A"].ilk, bytes32("name"), "test");
         assertEq(registry.name(ilks["BAT-A"].ilk), "test");
         // symbol
-        assertEq(registry.symbol(ilks["WBTC-A"].ilk), ilks["BAT-A"].symbol);
-        registry.file(ilks["WBTC-A"].ilk, bytes32("symbol"), "TES");
-        assertEq(registry.symbol(ilks["WBTC-A"].ilk), "TES");
+        assertEq(registry.symbol(ilks["BAT-A"].ilk), ilks["BAT-A"].symbol);
+        registry.file(ilks["BAT-A"].ilk, bytes32("symbol"), "test2");
+        assertEq(registry.symbol(ilks["BAT-A"].ilk), "test2");
     }
 
     function testFailFileString_dss() public {
