@@ -16,7 +16,7 @@ Mainnet: [0xbe4f921cdfef2cf5080f9cf00cc2c14f1f96bd07](https://etherscan.io/addre
 
 Provides an on-chain list of `ilk` types in the DSS system.
 
-Useful for external contracts which need to iterate over the on-chain ilk types and/or access information about a particular ilk.
+Useful for external contracts or web frontends which need to iterate over the on-chain ilk types and/or access information about a particular ilk.
 
 * Modify the registry
 
