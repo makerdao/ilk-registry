@@ -74,7 +74,29 @@ contract DssIlkRegistryTest is DSTest {
         string  symbol;
     }
 
+    struct NonStandardIlk {
+        bytes32 ilk;
+        address pip;
+        address gem;
+        address join;
+        address flip;
+        uint256 dec;
+        bytes32 name;
+        bytes32 symbol;
+    }
+
+    struct IncompleteIlk {
+        bytes32 ilk;
+        address pip;
+        address gem;
+        address join;
+        address flip;
+        uint256 dec;
+    }
+
     mapping (bytes32 => Ilk) ilks;
+    NonStandardIlk nsIlk;
+    IncompleteIlk iIlk;
 
     uint constant WAD = 10 ** 18;
     uint constant RAY = 10 ** 27;
@@ -119,6 +141,58 @@ contract DssIlkRegistryTest is DSTest {
         ilks[name].dec    = join.dec();
         ilks[name].name   = bytes32ToStr(name);
         ilks[name].symbol = bytes32ToStr(name);
+    }
+
+    function initNonStandardCollateral(bytes32 name) internal returns (NonStandardIlk memory) {
+        DSToken coin = new DSToken(name);
+        coin.setName(name);
+        coin.mint(20 ether);
+
+        vat.init(name);
+        GemJoin join = new GemJoin(address(vat), name, address(coin));
+        vat.rely(address(join));
+
+        DSValue pip = new DSValue();
+        spot.file(name, "pip", address(pip));
+
+        Flipper flip = new Flipper(address(vat), name);
+        vat.hope(address(flip));
+        flip.rely(address(cat));
+        cat.file(name, "flip", address(flip));
+
+        nsIlk.ilk    = name;
+        nsIlk.pip    = address(pip);
+        nsIlk.gem    = address(coin);
+        nsIlk.join   = address(join);
+        nsIlk.flip   = address(flip);
+        nsIlk.dec    = join.dec();
+        nsIlk.name   = name;
+        nsIlk.symbol = name;
+    }
+
+    function initNonStandardCollateral(bytes32 name) internal returns (IncompleteIlk memory) {
+        DSToken coin = new DSToken(name);
+        coin.setName(name);
+        coin.mint(20 ether);
+
+        vat.init(name);
+        GemJoin join = new GemJoin(address(vat), name, address(coin));
+        vat.rely(address(join));
+
+        DSValue pip = new DSValue();
+        spot.file(name, "pip", address(pip));
+
+        Flipper flip = new Flipper(address(vat), name);
+        vat.hope(address(flip));
+        flip.rely(address(cat));
+        cat.file(name, "flip", address(flip));
+
+        nsIlk.ilk    = name;
+        nsIlk.pip    = address(pip);
+        nsIlk.gem    = address(coin);
+        nsIlk.join   = address(join);
+        nsIlk.flip   = address(flip);
+        nsIlk.dec    = join.dec();
     }
 
     function setUp() public {
