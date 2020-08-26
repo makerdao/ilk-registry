@@ -446,7 +446,6 @@ contract DssIlkRegistryTest is DSTest {
         vat.rely(address(spot));
         end.file("spot",  address(spot));
         DSValue pip = new DSValue();
-        ilks["DAI-A"].pip = address(pip);
         spot.file("DAI-A", "pip", address(pip));
 
         registry.file(bytes32("spot"), address(spot));
