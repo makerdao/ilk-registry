@@ -8,6 +8,7 @@ import {Vat}     from 'dss/vat.sol';
 import {End}     from 'dss/end.sol';
 import {Vow}     from 'dss/vow.sol';
 import {Cat}     from 'dss/cat.sol';
+import {Dai}     from 'dss/dai.sol';
 import {Spotter} from 'dss/spot.sol';
 import {PipLike} from 'dss/spot.sol';
 import {Flipper} from 'dss/flip.sol';
@@ -74,29 +75,7 @@ contract DssIlkRegistryTest is DSTest {
         string  symbol;
     }
 
-    struct NonStandardIlk {
-        bytes32 ilk;
-        address pip;
-        address gem;
-        address join;
-        address flip;
-        uint256 dec;
-        bytes32 name;
-        bytes32 symbol;
-    }
-
-    struct IncompleteIlk {
-        bytes32 ilk;
-        address pip;
-        address gem;
-        address join;
-        address flip;
-        uint256 dec;
-    }
-
     mapping (bytes32 => Ilk) ilks;
-    NonStandardIlk nsIlk;
-    IncompleteIlk iIlk;
 
     uint constant WAD = 10 ** 18;
     uint constant RAY = 10 ** 27;
@@ -143,10 +122,10 @@ contract DssIlkRegistryTest is DSTest {
         ilks[name].symbol = bytes32ToStr(name);
     }
 
-    function initNonStandardCollateral(bytes32 name) internal returns (NonStandardIlk memory) {
-        DSToken coin = new DSToken(name);
-        coin.setName(name);
-        coin.mint(20 ether);
+    function initStandardCollateral() internal returns (Ilk memory) {
+        Dai coin = new Dai(1);
+        bytes32 name = "DAI-A";
+        coin.mint(address(this), 20 ether);
 
         vat.init(name);
         GemJoin join = new GemJoin(address(vat), name, address(coin));
@@ -160,39 +139,14 @@ contract DssIlkRegistryTest is DSTest {
         flip.rely(address(cat));
         cat.file(name, "flip", address(flip));
 
-        nsIlk.ilk    = name;
-        nsIlk.pip    = address(pip);
-        nsIlk.gem    = address(coin);
-        nsIlk.join   = address(join);
-        nsIlk.flip   = address(flip);
-        nsIlk.dec    = join.dec();
-        nsIlk.name   = name;
-        nsIlk.symbol = name;
-    }
-
-    function initMissingCollateral(bytes32 name) internal returns (IncompleteIlk memory) {
-        DSToken coin = new DSToken(name);
-        coin.setName(name);
-        coin.mint(20 ether);
-
-        vat.init(name);
-        GemJoin join = new GemJoin(address(vat), name, address(coin));
-        vat.rely(address(join));
-
-        DSValue pip = new DSValue();
-        spot.file(name, "pip", address(pip));
-
-        Flipper flip = new Flipper(address(vat), address(cat), name);
-        vat.hope(address(flip));
-        flip.rely(address(cat));
-        cat.file(name, "flip", address(flip));
-
-        nsIlk.ilk    = name;
-        nsIlk.pip    = address(pip);
-        nsIlk.gem    = address(coin);
-        nsIlk.join   = address(join);
-        nsIlk.flip   = address(flip);
-        nsIlk.dec    = join.dec();
+        ilks[name].ilk    = name;
+        ilks[name].pip    = address(pip);
+        ilks[name].gem    = address(coin);
+        ilks[name].join   = address(join);
+        ilks[name].flip   = address(flip);
+        ilks[name].dec    = join.dec();
+        ilks[name].name   = coin.name();
+        ilks[name].symbol = coin.symbol();
     }
 
     function setUp() public {
@@ -213,6 +167,7 @@ contract DssIlkRegistryTest is DSTest {
         initCollateral("WBTC-A");
         initCollateral("USDC-A");
         initCollateral("USDC-B");
+        initStandardCollateral(); // Adds "DAI-A"
 
         registry = new IlkRegistry(address(end));
     }
@@ -221,7 +176,8 @@ contract DssIlkRegistryTest is DSTest {
         assertEq(registry.count(), 0);
         registry.add(ilks["ETH-A"].join);
         registry.add(ilks["BAT-A"].join);
-        assertEq(registry.count(), 2);
+        registry.add(ilks["DAI-A"].join);
+        assertEq(registry.count(), 3);
     }
 
     function testIlkData_dss() public {
@@ -251,13 +207,15 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["WBTC-A"].join);
         registry.add(ilks["USDC-A"].join);
         registry.add(ilks["USDC-B"].join);
+        registry.add(ilks["DAI-A"].join);
         bytes32[] memory regIlks = registry.list();
-        assertEq(regIlks.length, 5);
+        assertEq(regIlks.length, 6);
         assertEq(regIlks[0], ilks["ETH-A"].ilk);
         assertEq(regIlks[1], ilks["BAT-A"].ilk);
         assertEq(regIlks[2], ilks["WBTC-A"].ilk);
         assertEq(regIlks[3], ilks["USDC-A"].ilk);
         assertEq(regIlks[4], ilks["USDC-B"].ilk);
+        assertEq(regIlks[5], ilks["DAI-A"].ilk);
     }
 
     function testIlksPos_dss() public {
@@ -369,12 +327,16 @@ contract DssIlkRegistryTest is DSTest {
 
     function testName_dss() public {
         registry.add(ilks["WBTC-A"].join);
+        registry.add(ilks["DAI-A"].join);
         assertEq(registry.name(ilks["WBTC-A"].ilk), ilks["WBTC-A"].name);
+        assertEq(registry.name(ilks["DAI-A"].ilk), ilks["DAI-A"].name);
     }
 
     function testSymbol_dss() public {
         registry.add(ilks["WBTC-A"].join);
+        registry.add(ilks["DAI-A"].join);
         assertEq(registry.symbol(ilks["WBTC-A"].ilk), ilks["WBTC-A"].symbol);
+        assertEq(registry.symbol(ilks["DAI-A"].ilk), ilks["DAI-A"].symbol);
     }
 
     function testInfo_dss() public {
