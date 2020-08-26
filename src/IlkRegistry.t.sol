@@ -195,7 +195,7 @@ contract DssIlkRegistryTest is DSTest {
         initCollateral("USDC-B");
         initStandardCollateral("DAI-A");
         initMissingCollateral("UNDAI-A");
-        registry = new IlkRegistry(address(end));
+        registry = new IlkRegistry(address(vat), address(cat), address(spot));
     }
 
     function testAddIlk_dss() public {
