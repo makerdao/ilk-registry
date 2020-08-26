@@ -432,9 +432,10 @@ contract DssIlkRegistryTest is DSTest {
         cat.file("WBTC-A", "flip", address(flip));
 
         registry.file(bytes32("cat"), address(cat));
-        registry.update("WBTC-A");
-
         assertEq(address(cat), address(registry.cat()));
+
+        assertEq(ilks["WBTC-A"].flip, address(registry.flip("WBTC-A")));
+        registry.update("WBTC-A");
         assertEq(address(flip), address(registry.flip("WBTC-A")));
     }
 
@@ -449,9 +450,10 @@ contract DssIlkRegistryTest is DSTest {
         spot.file("DAI-A", "pip", address(pip));
 
         registry.file(bytes32("spot"), address(spot));
-        registry.update("DAI-A");
-
         assertEq(address(spot), address(registry.spot()));
+
+        assertEq(ilks["DAI-A"].pip, address(registry.pip("DAI-A")));
+        registry.update("DAI-A");
         assertEq(address(pip), address(registry.pip("DAI-A")));
     }
 
