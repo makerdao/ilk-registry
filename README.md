@@ -50,6 +50,7 @@ Useful for external contracts or web frontends which need to iterate over the on
 
 * `auth` functions (available to MakerDAO governance)
 
+    * `file(bytes32 what, address)`: Update core contract values
     * `file(bytes32 ilk, bytes32 what, address)`: Update ilk data values
     * `file(bytes32 ilk, bytes32 what, uint256)`: Update ilk data values
     * `file(bytes32 ilk, bytes32 what, string calldata)`: Update ilk data values
