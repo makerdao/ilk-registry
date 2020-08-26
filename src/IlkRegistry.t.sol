@@ -16,6 +16,7 @@ import {Flapper} from 'dss/flap.sol';
 import {Flopper} from 'dss/flop.sol';
 import {GemJoin} from 'dss/join.sol';
 
+import "./fixtures/UnDai.sol";
 import "./IlkRegistry.sol";
 
 interface Hevm {
@@ -149,6 +150,33 @@ contract DssIlkRegistryTest is DSTest {
         ilks[name].symbol = coin.symbol();
     }
 
+    function initMissingCollateral() internal returns (Ilk memory) {
+        UnDai coin = new UnDai(1);
+        bytes32 name = "UNDAI-A";
+        coin.mint(address(this), 20 ether);
+
+        vat.init(name);
+        GemJoin join = new GemJoin(address(vat), name, address(coin));
+        vat.rely(address(join));
+
+        DSValue pip = new DSValue();
+        spot.file(name, "pip", address(pip));
+
+        Flipper flip = new Flipper(address(vat), address(cat), name);
+        vat.hope(address(flip));
+        flip.rely(address(cat));
+        cat.file(name, "flip", address(flip));
+
+        ilks[name].ilk    = name;
+        ilks[name].pip    = address(pip);
+        ilks[name].gem    = address(coin);
+        ilks[name].join   = address(join);
+        ilks[name].flip   = address(flip);
+        ilks[name].dec    = join.dec();
+        ilks[name].name   = bytes32ToStr(name);
+        ilks[name].symbol = bytes32ToStr(name);
+    }
+
     function setUp() public {
         vat  = new Vat();
         cat  = new Cat(address(vat));
@@ -168,6 +196,7 @@ contract DssIlkRegistryTest is DSTest {
         initCollateral("USDC-A");
         initCollateral("USDC-B");
         initStandardCollateral(); // Adds "DAI-A"
+        initMissingCollateral(); // Adds "UNDAI-A"
 
         registry = new IlkRegistry(address(end));
     }
@@ -328,15 +357,19 @@ contract DssIlkRegistryTest is DSTest {
     function testName_dss() public {
         registry.add(ilks["WBTC-A"].join);
         registry.add(ilks["DAI-A"].join);
+        registry.add(ilks["UNDAI-A"].join);
         assertEq(registry.name(ilks["WBTC-A"].ilk), ilks["WBTC-A"].name);
         assertEq(registry.name(ilks["DAI-A"].ilk), ilks["DAI-A"].name);
+        assertEq(registry.name(ilks["UNDAI-A"].ilk), ilks["UNDAI-A"].name);
     }
 
     function testSymbol_dss() public {
         registry.add(ilks["WBTC-A"].join);
         registry.add(ilks["DAI-A"].join);
+        registry.add(ilks["UNDAI-A"].join);
         assertEq(registry.symbol(ilks["WBTC-A"].ilk), ilks["WBTC-A"].symbol);
         assertEq(registry.symbol(ilks["DAI-A"].ilk), ilks["DAI-A"].symbol);
+        assertEq(registry.symbol(ilks["UNDAI-A"].ilk), ilks["UNDAI-A"].symbol);
     }
 
     function testInfo_dss() public {
