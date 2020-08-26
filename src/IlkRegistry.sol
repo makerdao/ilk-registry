@@ -38,6 +38,7 @@ interface CatLike {
 
 interface FlipLike {
   function vat()          external view returns (address);
+  function cat()          external view returns (address);
 }
 
 interface SpotLike {

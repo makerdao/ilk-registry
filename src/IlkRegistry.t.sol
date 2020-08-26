@@ -128,7 +128,7 @@ contract DssIlkRegistryTest is DSTest {
         DSValue pip = new DSValue();
         spot.file(name, "pip", address(pip));
 
-        Flipper flip = new Flipper(address(vat), name);
+        Flipper flip = new Flipper(address(vat), address(cat), name);
         vat.hope(address(flip));
         flip.rely(address(cat));
         cat.file(name, "flip", address(flip));
@@ -155,7 +155,7 @@ contract DssIlkRegistryTest is DSTest {
         DSValue pip = new DSValue();
         spot.file(name, "pip", address(pip));
 
-        Flipper flip = new Flipper(address(vat), name);
+        Flipper flip = new Flipper(address(vat), address(cat), name);
         vat.hope(address(flip));
         flip.rely(address(cat));
         cat.file(name, "flip", address(flip));
@@ -170,7 +170,7 @@ contract DssIlkRegistryTest is DSTest {
         nsIlk.symbol = name;
     }
 
-    function initNonStandardCollateral(bytes32 name) internal returns (IncompleteIlk memory) {
+    function initMissingCollateral(bytes32 name) internal returns (IncompleteIlk memory) {
         DSToken coin = new DSToken(name);
         coin.setName(name);
         coin.mint(20 ether);
@@ -182,7 +182,7 @@ contract DssIlkRegistryTest is DSTest {
         DSValue pip = new DSValue();
         spot.file(name, "pip", address(pip));
 
-        Flipper flip = new Flipper(address(vat), name);
+        Flipper flip = new Flipper(address(vat), address(cat), name);
         vat.hope(address(flip));
         flip.rely(address(cat));
         cat.file(name, "flip", address(flip));
