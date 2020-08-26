@@ -23,6 +23,7 @@ Useful for external contracts or web frontends which need to iterate over the on
     * `add(address joinAdapter)`: Add a new ilk to the registry by passing the Join Adapter address. The adapter must be live on mainnet and can not already be included in the registry.
 
     * `remove(bytes32 ilk)`: Remove an ilk from the registry if it's adapter has been caged.
+    * `update(bytes32 ilk)`: Update the `flip` and `pip` contracts in storage for a given `ilk`.
 
 * Get information from the registry
 
@@ -49,6 +50,7 @@ Useful for external contracts or web frontends which need to iterate over the on
 
 * `auth` functions (available to MakerDAO governance)
 
+    * `file(bytes32 what, address)`: Update core contract values
     * `file(bytes32 ilk, bytes32 what, address)`: Update ilk data values
     * `file(bytes32 ilk, bytes32 what, uint256)`: Update ilk data values
     * `file(bytes32 ilk, bytes32 what, string calldata)`: Update ilk data values
@@ -58,4 +60,7 @@ Useful for external contracts or web frontends which need to iterate over the on
 
 ## Testing
 
-Configure `ETH_RPC_URL` for mainnet testing and run `./test-ilk-registry.sh`
+```
+$ dapp update
+$ make test
+```
