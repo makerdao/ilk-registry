@@ -199,7 +199,7 @@ contract IlkRegistry {
     // Authed edit function
     function file(bytes32 what, address data) external auth {
         if (what == "cat")  cat  = CatLike(data);
-        if (what == "spot") spot = SpotLike(data);
+        else if (what == "spot") spot = SpotLike(data);
         else revert("IlkRegistry/file-unrecognized-param-address");
     }
 
