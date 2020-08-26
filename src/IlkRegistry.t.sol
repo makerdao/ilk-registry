@@ -694,14 +694,10 @@ contract DssIlkRegistryTest is DSTest {
         assertEq(registry.pip(ilks["WBTC-A"].ilk), ilks["WBTC-A"].pip);
 
         registry.file(ilks["WBTC-A"].ilk, bytes32("gem"),  address(ilks["USDC-A"].gem));
-        registry.file(ilks["WBTC-A"].ilk, bytes32("pip"),  address(ilks["USDC-A"].gem));
         registry.file(ilks["WBTC-A"].ilk, bytes32("join"), address(ilks["USDC-A"].gem));
-        registry.file(ilks["WBTC-A"].ilk, bytes32("flip"), address(ilks["USDC-A"].gem));
 
         assertEq(registry.gem(ilks["WBTC-A"].ilk),  ilks["USDC-A"].gem);
-        assertEq(registry.pip(ilks["WBTC-A"].ilk),  ilks["USDC-A"].gem);
         assertEq(registry.join(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
-        assertEq(registry.flip(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
     }
 
     function testFailFileAddress_dss() public {
@@ -738,5 +734,3 @@ contract DssIlkRegistryTest is DSTest {
         registry.file(ilks["BAT-A"].ilk, bytes32("test"), ilks["BAT-A"].name);
     }
 }
-
-
