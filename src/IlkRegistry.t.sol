@@ -419,6 +419,24 @@ contract DssIlkRegistryTest is DSTest {
         assertEq(registry.join(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
     }
 
+    function testFileCat_dss() public {
+        registry.add(ilks["WBTC-A"].join);
+        assertEq(registry.pip(ilks["WBTC-A"].ilk), ilks["WBTC-A"].pip);
+
+        cat  = new Cat(address(vat));
+        vat.rely(address(cat));
+        end.file("cat",  address(cat));
+        Flipper flip = new Flipper(address(vat), address(cat), "WBTC-A");
+        vat.hope(address(flip));
+        flip.rely(address(cat));
+        cat.file("WBTC-A", "flip", address(flip));
+
+        registry.file(bytes32("cat"), address(cat));
+        registry.update("WBTC-A");
+
+        assertEq(address(cat), address(registry.cat()));
+    }
+
     function testFailFileAddress_dss() public {
         registry.add(ilks["WBTC-A"].join);
         registry.file(ilks["WBTC-A"].ilk, bytes32("test"), address(ilks["USDC-A"].gem));
