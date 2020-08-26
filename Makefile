@@ -1,4 +1,4 @@
-all    :; SOLC_FLAGS="--optimize --optimize-runs=1000000" dapp --use solc:0.6.7 build --extract
+all    :; SOLC_FLAGS="--optimize --optimize-runs=1000000" dapp --use solc:0.6.7 build
 clean  :; dapp clean
 test   :; ./test-ilk-registry.sh
 test-dss   :; dapp --use solc:0.6.7 build && dapp test --match "_dss" -v
