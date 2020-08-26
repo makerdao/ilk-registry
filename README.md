@@ -60,4 +60,7 @@ Useful for external contracts or web frontends which need to iterate over the on
 
 ## Testing
 
-Configure `ETH_RPC_URL` for mainnet testing and run `./test-ilk-registry.sh`
+```
+$ dapp update
+$ make test
+```
