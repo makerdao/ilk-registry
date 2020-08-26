@@ -435,6 +435,25 @@ contract DssIlkRegistryTest is DSTest {
         registry.update("WBTC-A");
 
         assertEq(address(cat), address(registry.cat()));
+        assertEq(address(flip), address(registry.flip("WBTC-A")));
+    }
+
+    function testFileSpot_dss() public {
+        registry.add(ilks["DAI-A"].join);
+        assertEq(registry.pip(ilks["DAI-A"].ilk), ilks["DAI-A"].pip);
+
+        spot  = new Spotter(address(vat));
+        vat.rely(address(spot));
+        end.file("spot",  address(spot));
+        DSValue pip = new DSValue();
+        ilks["DAI-A"].pip = address(pip);
+        spot.file("DAI-A", "pip", address(pip));
+
+        registry.file(bytes32("spot"), address(spot));
+        registry.update("DAI-A");
+
+        assertEq(address(spot), address(registry.spot()));
+        assertEq(address(pip), address(registry.pip("DAI-A")));
     }
 
     function testFailFileAddress_dss() public {
