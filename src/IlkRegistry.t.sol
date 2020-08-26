@@ -123,9 +123,8 @@ contract DssIlkRegistryTest is DSTest {
         ilks[name].symbol = bytes32ToStr(name);
     }
 
-    function initStandardCollateral() internal returns (Ilk memory) {
+    function initStandardCollateral(bytes32 name) internal returns (Ilk memory) {
         Dai coin = new Dai(1);
-        bytes32 name = "DAI-A";
         coin.mint(address(this), 20 ether);
 
         vat.init(name);
@@ -150,9 +149,8 @@ contract DssIlkRegistryTest is DSTest {
         ilks[name].symbol = coin.symbol();
     }
 
-    function initMissingCollateral() internal returns (Ilk memory) {
+    function initMissingCollateral(bytes32 name) internal returns (Ilk memory) {
         UnDai coin = new UnDai(1);
-        bytes32 name = "UNDAI-A";
         coin.mint(address(this), 20 ether);
 
         vat.init(name);
@@ -195,9 +193,8 @@ contract DssIlkRegistryTest is DSTest {
         initCollateral("WBTC-A");
         initCollateral("USDC-A");
         initCollateral("USDC-B");
-        initStandardCollateral(); // Adds "DAI-A"
-        initMissingCollateral(); // Adds "UNDAI-A"
-
+        initStandardCollateral("DAI-A");
+        initMissingCollateral("UNDAI-A");
         registry = new IlkRegistry(address(end));
     }
 
