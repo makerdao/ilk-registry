@@ -144,6 +144,7 @@ contract IlkRegistry {
 
         (address _flip,,) = cat.ilks(_ilk);
         require(_flip != address(0), "IlkRegistry/flip-invalid");
+        require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
         require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
 
         string memory name = bytes32ToStr(_ilk);
@@ -338,6 +339,7 @@ contract IlkRegistry {
 
         (address _flip,,) = cat.ilks(ilk);
         require(_flip != address(0), "IlkRegistry/flip-invalid");
+        require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
         require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
 
         ilkData[ilk].pip   = _pip;
