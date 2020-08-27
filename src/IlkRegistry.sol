@@ -47,12 +47,6 @@ interface SpotLike {
   function ilks(bytes32)  external view returns (address, uint256);
 }
 
-interface EndLike {
-    function vat()        external view returns (address);
-    function cat()        external view returns (address);
-    function spot()       external view returns (address);
-}
-
 interface TokenLike {
     function name()       external view returns (string memory);
     function symbol()     external view returns (string memory);
@@ -107,23 +101,23 @@ contract IlkRegistry {
     mapping (bytes32 => Ilk) public ilkData;
     bytes32[] ilks;
 
-    // Pass a dss End contract to the registry to initialize
-    constructor(address end) public {
+    // Initialize the registry
+    constructor(address vat_, address cat_, address spot_) public {
 
-        VatLike _vat = vat = VatLike(EndLike(end).vat());
+        VatLike _vat = vat = VatLike(vat_);
+        cat = CatLike(cat_);
+        spot = SpotLike(spot_);
 
-        cat = CatLike(EndLike(end).cat());
-        spot = SpotLike(EndLike(end).spot());
-
-        gemInfo = new GemInfo();
-
-        require(cat.vat() == address(_vat), "IlkRegistry/invalid-cat-vat");
-        require(spot.vat() == address(_vat), "IlkRegistry/invalid-spotter-vat");
-        require(_vat.wards(address(cat)) == 1, "IlkRegistry/cat-not-authorized");
-        require(_vat.wards(address(spot)) == 1, "IlkRegistry/spot-not-authorized");
+        require(cat.vat() == vat_, "IlkRegistry/invalid-cat-vat");
+        require(spot.vat() == vat_, "IlkRegistry/invalid-spotter-vat");
+        require(_vat.wards(cat_) == 1, "IlkRegistry/cat-not-authorized");
+        require(_vat.wards(spot_) == 1, "IlkRegistry/spot-not-authorized");
         require(_vat.live() == 1, "IlkRegistry/vat-not-live");
         require(cat.live() == 1, "IlkRegistry/cat-not-live");
         require(spot.live() == 1, "IlkRegistry/spot-not-live");
+
+        gemInfo = new GemInfo();
+
         wards[msg.sender] = 1;
     }
 
