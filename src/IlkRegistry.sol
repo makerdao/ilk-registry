@@ -47,12 +47,6 @@ interface SpotLike {
   function ilks(bytes32)  external view returns (address, uint256);
 }
 
-interface EndLike {
-    function vat()        external view returns (address);
-    function cat()        external view returns (address);
-    function spot()       external view returns (address);
-}
-
 interface TokenLike {
     function name()       external view returns (string memory);
     function symbol()     external view returns (string memory);
