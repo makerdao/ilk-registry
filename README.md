@@ -4,9 +4,13 @@ A publicly-modifiable registry of `ilk`'s in the Dai Stablecoin System.
 
 ## Public addresses
 
-Kovan: [0x6618BD7bBaBFacC518Fdec43542E4a73629B0819](https://kovan.etherscan.io/address/0x6618bd7bbabfacc518fdec43542e4a73629b0819)
+(v1.1.0) Kovan: [0xedE45A0522CA19e979e217064629778d6Cc2d9Ea](https://kovan.etherscan.io/address/0xedE45A0522CA19e979e217064629778d6Cc2d9Ea)
 
-Mainnet: [0xbe4f921cdfef2cf5080f9cf00cc2c14f1f96bd07](https://etherscan.io/address/0xbe4f921cdfef2cf5080f9cf00cc2c14f1f96bd07)
+(v1.1.0) Mainnet: [0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24](https://etherscan.io/address/0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24)
+
+(v1.0.0 Deprecated) Kovan: [0x6618BD7bBaBFacC518Fdec43542E4a73629B0819](https://kovan.etherscan.io/address/0x6618bd7bbabfacc518fdec43542e4a73629b0819)
+
+(v1.0.0 Deprecated) Mainnet: [0xbe4f921cdfef2cf5080f9cf00cc2c14f1f96bd07](https://etherscan.io/address/0xbe4f921cdfef2cf5080f9cf00cc2c14f1f96bd07)
 
 ## Requirements
 
@@ -21,7 +25,6 @@ Useful for external contracts or web frontends which need to iterate over the on
 * Modify the registry
 
     * `add(address joinAdapter)`: Add a new ilk to the registry by passing the Join Adapter address. The adapter must be live on mainnet and can not already be included in the registry.
-
     * `remove(bytes32 ilk)`: Remove an ilk from the registry if it's adapter has been caged.
     * `update(bytes32 ilk)`: Update the `flip` and `pip` contracts in storage for a given `ilk`.
 
