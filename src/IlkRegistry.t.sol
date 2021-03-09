@@ -335,10 +335,10 @@ contract DssIlkRegistryTest is DSTest {
         assertEq(registry.join(ilks["USDC-A"].ilk), ilks["USDC-A"].join);
     }
 
-    function testFlip_dss() public {
+    function testXlip_dss() public {
         registry.add(ilks["WBTC-A"].join);
         registry.add(ilks["USDC-A"].join);
-        assertEq(registry.flip(ilks["USDC-A"].ilk), ilks["USDC-A"].flip);
+        assertEq(registry.xlip(ilks["USDC-A"].ilk), ilks["USDC-A"].flip);
     }
 
     function testDec_dss() public {
@@ -426,16 +426,16 @@ contract DssIlkRegistryTest is DSTest {
     function testUpdate_dss() public {
         registry.add(ilks["BAT-A"].join);
         assertEq(registry.pip("BAT-A"), ilks["BAT-A"].pip);
-        assertEq(registry.flip("BAT-A"), ilks["BAT-A"].flip);
+        assertEq(registry.xlip("BAT-A"), ilks["BAT-A"].flip);
         registry.update("BAT-A");
         assertEq(registry.pip("BAT-A"), ilks["BAT-A"].pip);
-        assertEq(registry.flip("BAT-A"), ilks["BAT-A"].flip);
+        assertEq(registry.xlip("BAT-A"), ilks["BAT-A"].flip);
     }
 
     function testUpdateChanged_dss() public {
         registry.add(ilks["USDC-A"].join);
         assertEq(registry.pip("USDC-A"), ilks["USDC-A"].pip);
-        assertEq(registry.flip("USDC-A"), ilks["USDC-A"].flip);
+        assertEq(registry.xlip("USDC-A"), ilks["USDC-A"].flip);
 
         // Test spell updates to USDC pip and flip to match BAT
         cat.file("USDC-A", "flip", ilks["BAT-A"].flip);
@@ -443,7 +443,7 @@ contract DssIlkRegistryTest is DSTest {
 
         registry.update("USDC-A");
         assertEq(registry.pip("USDC-A"), ilks["BAT-A"].pip);
-        assertEq(registry.flip("USDC-A"), ilks["BAT-A"].flip);
+        assertEq(registry.xlip("USDC-A"), ilks["BAT-A"].flip);
     }
 
     function testFileAddress_dss() public {
@@ -472,9 +472,9 @@ contract DssIlkRegistryTest is DSTest {
         registry.file(bytes32("cat"), address(cat));
         assertEq(address(cat), address(registry.cat()));
 
-        assertEq(ilks["WBTC-A"].flip, address(registry.flip("WBTC-A")));
+        assertEq(ilks["WBTC-A"].flip, address(registry.xlip("WBTC-A")));
         registry.update("WBTC-A");
-        assertEq(address(flip), address(registry.flip("WBTC-A")));
+        assertEq(address(flip), address(registry.xlip("WBTC-A")));
     }
 
     function testFileSpot_dss() public {

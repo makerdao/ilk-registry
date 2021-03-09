@@ -100,14 +100,14 @@ contract IlkRegistry {
     SpotLike public spot;
 
     struct Ilk {
-        uint256 pos;   // Index in ilks array
-        address gem;   // The token contract
-        address pip;   // Token price
-        address join;  // DSS GemJoin adapter
-        address flip;  // Auction contract
-        uint256 dec;   // Token decimals
-        string name;   // Token name
-        string symbol; // Token symbol
+        uint256 pos;    // Index in ilks array
+        address gem;    // The token contract
+        address pip;    // Token price
+        address join;   // DSS GemJoin adapter
+        address xlip;   // Auction contract
+        uint256 dec;    // Token decimals
+        string  name;   // Token name
+        string  symbol; // Token symbol
     }
 
     mapping (bytes32 => Ilk) public ilkData;
@@ -153,12 +153,15 @@ contract IlkRegistry {
 
         (address _clip,,,) = dog.ilks(_ilk);
         (address _flip,,)  = cat.ilks(_ilk);
+        address  _xlip;
         if (_clip != address(0)) {
             require(ClipLike(_clip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
             require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
+            _xlip = _clip;
         } else if (_flip != address(0)) {
             require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
             require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
+            _xlip = _flip;
         } else {
             revert("IlkRegistry/invalid-auction-contract");
         }
@@ -187,7 +190,7 @@ contract IlkRegistry {
             join.gem(),
             _pip,
             address(join),
-            _flip,
+            _xlip,
             join.dec(),
             name,
             symbol
@@ -291,7 +294,7 @@ contract IlkRegistry {
         address gem,
         address pip,
         address join,
-        address flip
+        address xlip
     ) {
         Ilk memory _ilk = ilkData[ilk];
         return (
@@ -301,7 +304,7 @@ contract IlkRegistry {
             _ilk.gem,
             _ilk.pip,
             _ilk.join,
-            _ilk.flip
+            _ilk.xlip
         );
     }
 
@@ -325,9 +328,9 @@ contract IlkRegistry {
         return ilkData[ilk].join;
     }
 
-    // The flipper for the ilk
-    function flip(bytes32 ilk) external view returns (address) {
-        return ilkData[ilk].flip;
+    // The auction contract for the ilk
+    function xlip(bytes32 ilk) external view returns (address) {
+        return ilkData[ilk].xlip;
     }
 
     // The number of decimals on the ilk
@@ -353,13 +356,23 @@ contract IlkRegistry {
         (address _pip,) = spot.ilks(ilk);
         require(_pip != address(0), "IlkRegistry/pip-invalid");
 
-        (address _flip,,) = cat.ilks(ilk);
-        require(_flip != address(0), "IlkRegistry/flip-invalid");
-        require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
-        require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
+        (address _clip,,,) = dog.ilks(ilk);
+        (address _flip,,)  = cat.ilks(ilk);
+        address  _xlip;
+        if (_clip != address(0)) {
+            require(ClipLike(_clip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
+            require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
+            _xlip = _clip;
+        } else if (_flip != address(0)) {
+            require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
+            require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
+            _xlip = _flip;
+        } else {
+            revert("IlkRegistry/invalid-auction-contract");
+        }
 
         ilkData[ilk].pip   = _pip;
-        ilkData[ilk].flip  = _flip;
+        ilkData[ilk].xlip  = _xlip;
         emit UpdateIlk(ilk);
     }
 
