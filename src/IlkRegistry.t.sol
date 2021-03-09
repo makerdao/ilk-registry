@@ -85,6 +85,10 @@ contract DssIlkRegistryTest is DSTest {
     uint constant WAD = 10 ** 18;
     uint constant RAY = 10 ** 27;
 
+    event Debug(uint256, address);
+    event Debug(uint256, uint256);
+    event Debug(uint256, bytes32);
+
     function ray(uint wad) internal pure returns (uint) {
         return wad * 10 ** 9;
     }
@@ -475,6 +479,26 @@ contract DssIlkRegistryTest is DSTest {
         assertEq(ilks["WBTC-A"].flip, address(registry.xlip("WBTC-A")));
         registry.update("WBTC-A");
         assertEq(address(flip), address(registry.xlip("WBTC-A")));
+    }
+
+    function testFileDog_dss() public {
+        registry.add(ilks["CLIP-A"].join);
+        assertEq(registry.pip(ilks["CLIP-A"].ilk), ilks["CLIP-A"].pip);
+
+        dog  = new Dog(address(vat));
+        vat.rely(address(dog));
+        end.file("dog",  address(dog));
+        Clipper clip = new Clipper(address(vat), address(spot), address(dog), "CLIP-A");
+        vat.hope(address(clip));
+        clip.rely(address(dog));
+        dog.file("CLIP-A", "clip", address(clip));
+
+        registry.file(bytes32("dog"), address(dog));
+        assertEq(address(dog), address(registry.dog()));
+
+        assertEq(ilks["CLIP-A"].flip, address(registry.xlip("CLIP-A")));
+        registry.update("CLIP-A");
+        assertEq(address(clip), address(registry.xlip("CLIP-A")));
     }
 
     function testFileSpot_dss() public {
