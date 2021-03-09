@@ -36,9 +36,20 @@ interface CatLike {
   function ilks(bytes32)  external view returns (address, uint256, uint256);
 }
 
+interface DogLike {
+  function vat()          external view returns (address);
+  function live()         external view returns (uint256);
+  function ilks(bytes32)  external view returns (address, uint256, uint256, uint256);
+}
+
 interface FlipLike {
   function vat()          external view returns (address);
   function cat()          external view returns (address);
+}
+
+interface ClipLike {
+  function vat()          external view returns (address);
+  function dog()          external view returns (address);
 }
 
 interface SpotLike {
@@ -85,6 +96,7 @@ contract IlkRegistry {
     GemInfo  private immutable gemInfo;
 
     CatLike  public cat;
+    DogLike  public dog;
     SpotLike public spot;
 
     struct Ilk {
@@ -102,12 +114,14 @@ contract IlkRegistry {
     bytes32[] ilks;
 
     // Initialize the registry
-    constructor(address vat_, address cat_, address spot_) public {
+    constructor(address vat_, address dog_, address cat_, address spot_) public {
 
         VatLike _vat = vat = VatLike(vat_);
+        dog = DogLike(dog_);
         cat = CatLike(cat_);
         spot = SpotLike(spot_);
 
+        require(dog.vat() == vat_, "IlkRegistry/invalid-dog-vat");
         require(cat.vat() == vat_, "IlkRegistry/invalid-cat-vat");
         require(spot.vat() == vat_, "IlkRegistry/invalid-spotter-vat");
         require(_vat.wards(cat_) == 1, "IlkRegistry/cat-not-authorized");
@@ -137,10 +151,17 @@ contract IlkRegistry {
         (address _pip,) = spot.ilks(_ilk);
         require(_pip != address(0), "IlkRegistry/pip-invalid");
 
-        (address _flip,,) = cat.ilks(_ilk);
-        require(_flip != address(0), "IlkRegistry/flip-invalid");
-        require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
-        require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
+        (address _clip,,,) = dog.ilks(_ilk);
+        (address _flip,,)  = cat.ilks(_ilk);
+        if (_clip != address(0)) {
+            require(ClipLike(_clip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
+            require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
+        } else if (_flip != address(0)) {
+            require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
+            require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
+        } else {
+            revert("IlkRegistry/invalid-auction-contract");
+        }
 
         string memory name = bytes32ToStr(_ilk);
         try gemInfo.name(join.gem()) returns (string memory _name) {

@@ -8,15 +8,17 @@ import {Vat}     from 'dss/vat.sol';
 import {End}     from 'dss/end.sol';
 import {Vow}     from 'dss/vow.sol';
 import {Cat}     from 'dss/cat.sol';
+import {Dog}     from 'dss/dog.sol';
 import {Dai}     from 'dss/dai.sol';
 import {Spotter} from 'dss/spot.sol';
 import {PipLike} from 'dss/spot.sol';
 import {Flipper} from 'dss/flip.sol';
+import {Clipper} from 'dss/clip.sol';
 import {Flapper} from 'dss/flap.sol';
 import {Flopper} from 'dss/flop.sol';
 import {GemJoin} from 'dss/join.sol';
 
-import "../test/fixtures/UnDai.sol";
+import "./test/fixtures/UnDai.sol";
 import "./IlkRegistry.sol";
 
 interface Hevm {
@@ -61,6 +63,7 @@ contract DssIlkRegistryTest is DSTest {
     End end;
     Vow vow;
     Cat cat;
+    Dog dog;
     Spotter spot;
 
     IlkRegistry public registry;
@@ -71,6 +74,7 @@ contract DssIlkRegistryTest is DSTest {
         address gem;
         address join;
         address flip;
+        address clip;
         uint256 dec;
         string  name;
         string  symbol;
@@ -118,6 +122,33 @@ contract DssIlkRegistryTest is DSTest {
         ilks[name].gem    = address(coin);
         ilks[name].join   = address(join);
         ilks[name].flip   = address(flip);
+        ilks[name].dec    = join.dec();
+        ilks[name].name   = bytes32ToStr(name);
+        ilks[name].symbol = bytes32ToStr(name);
+    }
+
+    function initClippableCollateral(bytes32 name) internal returns (Ilk memory) {
+        DSToken coin = new DSToken(name);
+        coin.setName(name);
+        coin.mint(20 ether);
+
+        vat.init(name);
+        GemJoin join = new GemJoin(address(vat), name, address(coin));
+        vat.rely(address(join));
+
+        DSValue pip = new DSValue();
+        spot.file(name, "pip", address(pip));
+
+        Clipper clip = new Clipper(address(vat), address(spot), address(dog), name);
+        vat.hope(address(clip));
+        clip.rely(address(dog));
+        dog.file(name, "clip", address(clip));
+
+        ilks[name].ilk    = name;
+        ilks[name].pip    = address(pip);
+        ilks[name].gem    = address(coin);
+        ilks[name].join   = address(join);
+        ilks[name].flip   = address(clip);
         ilks[name].dec    = join.dec();
         ilks[name].name   = bytes32ToStr(name);
         ilks[name].symbol = bytes32ToStr(name);
@@ -178,14 +209,18 @@ contract DssIlkRegistryTest is DSTest {
     function setUp() public {
         vat  = new Vat();
         cat  = new Cat(address(vat));
+        dog  = new Dog(address(vat));
         spot = new Spotter(address(vat));
 
         vat.rely(address(cat));
+        vat.rely(address(dog));
+        vat.rely(address(vat));
         vat.rely(address(spot));
 
         end = new End();
         end.file("vat",  address(vat));
         end.file("cat",  address(cat));
+        end.file("dog",  address(dog));
         end.file("spot", address(spot));
 
         initCollateral("ETH-A");
@@ -193,9 +228,10 @@ contract DssIlkRegistryTest is DSTest {
         initCollateral("WBTC-A");
         initCollateral("USDC-A");
         initCollateral("USDC-B");
+        initClippableCollateral("CLIP-A");
         initStandardCollateral("DAI-A");
         initMissingCollateral("UNDAI-A");
-        registry = new IlkRegistry(address(vat), address(cat), address(spot));
+        registry = new IlkRegistry(address(vat), address(dog), address(cat), address(spot));
     }
 
     function testAddIlk_dss() public {
@@ -234,14 +270,16 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["USDC-A"].join);
         registry.add(ilks["USDC-B"].join);
         registry.add(ilks["DAI-A"].join);
+        registry.add(ilks["CLIP-A"].join);
         bytes32[] memory regIlks = registry.list();
-        assertEq(regIlks.length, 6);
+        assertEq(regIlks.length, 7);
         assertEq(regIlks[0], ilks["ETH-A"].ilk);
         assertEq(regIlks[1], ilks["BAT-A"].ilk);
         assertEq(regIlks[2], ilks["WBTC-A"].ilk);
         assertEq(regIlks[3], ilks["USDC-A"].ilk);
         assertEq(regIlks[4], ilks["USDC-B"].ilk);
         assertEq(regIlks[5], ilks["DAI-A"].ilk);
+        assertEq(regIlks[6], ilks["CLIP-A"].ilk);
     }
 
     function testIlksPos_dss() public {
