@@ -16,7 +16,7 @@ import {Flapper} from 'dss/flap.sol';
 import {Flopper} from 'dss/flop.sol';
 import {GemJoin} from 'dss/join.sol';
 
-import "./fixtures/UnDai.sol";
+import "../test/fixtures/UnDai.sol";
 import "./IlkRegistry.sol";
 
 interface Hevm {
