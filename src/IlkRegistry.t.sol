@@ -249,10 +249,10 @@ contract DssIlkRegistryTest is DSTest {
     function testIlkData_dss() public {
         registry.add(ilks["ETH-A"].join);
         registry.add(ilks["BAT-A"].join);
-        (uint256 pos, address gem, address pip, address join,
+        (uint128 pos, uint128 code, address gem, address pip, address join,
         address flip, uint256 dec, string memory name,
         string memory symbol) = registry.ilkData(ilks["BAT-A"].ilk);
-        assertEq(pos, 1); // 0-indexed
+        assertEq(uint256(pos), 1); // 0-indexed
         assertEq(gem,    ilks["BAT-A"].gem);
         assertEq(pip,    ilks["BAT-A"].pip);
         assertEq(join,   ilks["BAT-A"].join);

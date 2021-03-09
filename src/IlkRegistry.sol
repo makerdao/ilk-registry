@@ -100,7 +100,8 @@ contract IlkRegistry {
     SpotLike public spot;
 
     struct Ilk {
-        uint256 pos;    // Index in ilks array
+        uint128 pos;    // Index in ilks array
+        uint128 code;   // Class code (1 - clip, 2 - flip, 3+ - other)
         address gem;    // The token contract
         address pip;    // Token price
         address join;   // DSS GemJoin adapter
@@ -154,14 +155,17 @@ contract IlkRegistry {
         (address _clip,,,) = dog.ilks(_ilk);
         (address _flip,,)  = cat.ilks(_ilk);
         address  _xlip;
+        uint128  _code;
         if (_clip != address(0)) {
             require(ClipLike(_clip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
             require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
             _xlip = _clip;
+            _code = 1;
         } else if (_flip != address(0)) {
             require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
             require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
             _xlip = _flip;
+            _code = 2;
         } else {
             revert("IlkRegistry/invalid-auction-contract");
         }
@@ -186,7 +190,8 @@ contract IlkRegistry {
 
         ilks.push(_ilk);
         ilkData[ilks[ilks.length - 1]] = Ilk(
-            ilks.length - 1,
+            uint128(ilks.length - 1),
+            _code,
             join.gem(),
             _pip,
             address(join),
@@ -231,13 +236,13 @@ contract IlkRegistry {
 
     // Authed edit function
     function file(bytes32 ilk, bytes32 what, uint256 data) external auth {
-        if (what == "dec")       ilkData[ilk].dec  = data;
+        if      (what == "dec")  ilkData[ilk].dec  = data;
         else revert("IlkRegistry/file-unrecognized-param-uint256");
     }
 
     // Authed edit function
     function file(bytes32 ilk, bytes32 what, string calldata data) external auth {
-        if (what == "name")        ilkData[ilk].name   = data;
+        if      (what == "name")   ilkData[ilk].name   = data;
         else if (what == "symbol") ilkData[ilk].symbol = data;
         else revert("IlkRegistry/file-unrecognized-param-string");
     }
@@ -252,7 +257,7 @@ contract IlkRegistry {
         // Replace the ilk we are removing
         ilks[_index] = _moveIlk;
         // Update the array position for the moved ilk
-        ilkData[_moveIlk].pos = _index;
+        ilkData[_moveIlk].pos = uint128(_index);
         // Trim off the end of the ilks array
         ilks.pop();
         // Delete struct data
@@ -360,21 +365,63 @@ contract IlkRegistry {
         (address _clip,,,) = dog.ilks(ilk);
         (address _flip,,)  = cat.ilks(ilk);
         address  _xlip;
+        uint128 _code;
         if (_clip != address(0)) {
             require(ClipLike(_clip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
             require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
             _xlip = _clip;
+            _code = 1;
         } else if (_flip != address(0)) {
             require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
             require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
             _xlip = _flip;
+            _code = 2;
         } else {
             revert("IlkRegistry/invalid-auction-contract");
         }
 
+        ilkData[ilk].code  = _code;
         ilkData[ilk].pip   = _pip;
         ilkData[ilk].xlip  = _xlip;
         emit UpdateIlk(ilk);
+    }
+
+    // Force addition or update of a collateral type. (i.e. for RWA, etc.)
+    //  Governance managed
+    function updateAuth(
+            bytes32 ilk,
+            uint128 code,
+            address gem,
+            address pip,
+            address join,
+            address xlip,
+            uint256 dec,
+            string calldata name,
+            string calldata symbol)
+        external auth {
+            require(code != 0, "IlkRegistry/invalid-type");
+            uint128 pos;
+
+            if (ilkData[ilk].code == 0) {
+                ilks.push(ilk);
+                pos = uint128(ilks.length - 1);
+                emit AddIlk(ilk);
+            } else {
+                pos = ilkData[ilk].pos;
+                emit UpdateIlk(ilk);
+            }
+
+            ilkData[ilks[pos]] = Ilk(
+                pos,
+                code,
+                gem,
+                pip,
+                join,
+                xlip,
+                dec,
+                name,
+                symbol
+            );
     }
 
     function bytes32ToStr(bytes32 _bytes32) internal pure returns (string memory) {
