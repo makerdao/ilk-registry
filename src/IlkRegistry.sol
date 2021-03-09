@@ -319,6 +319,14 @@ contract IlkRegistry {
         return ilkData[ilk].pos;
     }
 
+    // The classification code of the ilk
+    //  1  - Flipper
+    //  2  - Clipper
+    //  3+ - RWA or custom adapter
+    function code(bytes32 ilk) external view returns (uint256) {
+        return ilkData[ilk].code;
+    }
+
     // The token address
     function gem(bytes32 ilk) external view returns (address) {
         return ilkData[ilk].gem;
