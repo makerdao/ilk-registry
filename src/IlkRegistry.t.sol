@@ -452,17 +452,6 @@ contract DssIlkRegistryTest is DSTest {
         assertEq(registry.pip("USDC-A"), ilks["BAT-A"].pip);
     }
 
-    function testFileAddress_dss() public {
-        registry.add(ilks["WBTC-A"].join);
-        assertEq(registry.pip(ilks["WBTC-A"].ilk), ilks["WBTC-A"].pip);
-
-        registry.file(ilks["WBTC-A"].ilk, bytes32("gem"),  address(ilks["USDC-A"].gem));
-        registry.file(ilks["WBTC-A"].ilk, bytes32("join"), address(ilks["USDC-A"].gem));
-
-        assertEq(registry.gem(ilks["WBTC-A"].ilk),  ilks["USDC-A"].gem);
-        assertEq(registry.join(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
-    }
-
     function testFileCat_dss() public {
         registry.add(ilks["WBTC-A"].join);
         assertEq(registry.pip(ilks["WBTC-A"].ilk), ilks["WBTC-A"].pip);
@@ -519,6 +508,19 @@ contract DssIlkRegistryTest is DSTest {
         assertEq(ilks["DAI-A"].pip, address(registry.pip("DAI-A")));
         registry.update("DAI-A");
         assertEq(address(pip), address(registry.pip("DAI-A")));
+    }
+
+    function testFileAddress_dss() public {
+        registry.add(ilks["WBTC-A"].join);
+        assertEq(registry.pip(ilks["WBTC-A"].ilk), ilks["WBTC-A"].pip);
+
+        registry.file(ilks["WBTC-A"].ilk, bytes32("gem"),  address(ilks["USDC-A"].gem));
+        registry.file(ilks["WBTC-A"].ilk, bytes32("join"), address(ilks["USDC-A"].gem));
+        registry.file(ilks["WBTC-A"].ilk, bytes32("xlip"), address(ilks["USDC-A"].gem));
+
+        assertEq(registry.gem(ilks["WBTC-A"].ilk),  ilks["USDC-A"].gem);
+        assertEq(registry.join(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
+        assertEq(registry.xlip(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
     }
 
     function testFailFileAddress_dss() public {
