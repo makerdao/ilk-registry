@@ -381,9 +381,9 @@ contract IlkRegistry {
     //  Governance managed
     function updateAuth(
             bytes32 ilk,
-            uint96  class,
+            uint256 class,
             address gem,
-            uint8   dec,
+            uint256 dec,
             address pip,
             address join,
             address xlip,
@@ -392,6 +392,7 @@ contract IlkRegistry {
             )
         external auth {
             require(class != 0 && class <= uint96(-1), "IlkRegistry/invalid-class");
+            require(dec <= uint8(-1), "IlkRegistry/invalid-dec");
             uint96 _pos;
 
             if (ilkData[ilk].class == 0) {
@@ -407,8 +408,8 @@ contract IlkRegistry {
                 _pos,
                 join,
                 gem,
-                dec,
-                class,
+                uint8(dec),
+                uint96(class),
                 pip,
                 xlip,
                 name,
