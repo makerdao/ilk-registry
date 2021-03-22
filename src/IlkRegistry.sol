@@ -100,13 +100,13 @@ contract IlkRegistry {
     SpotLike public spot;
 
     struct Ilk {
-        uint128 pos;    // Index in ilks array
-        uint128 class;  // Classification code (1 - clip, 2 - flip, 3+ - other)
-        address gem;    // The token contract
-        address pip;    // Token price
+        uint96  pos;    // Index in ilks array
         address join;   // DSS GemJoin adapter
+        address gem;    // The token contract
+        uint8   dec;    // Token decimals
+        uint96  class;  // Classification code (1 - clip, 2 - flip, 3+ - other)
+        address pip;    // Token price
         address xlip;   // Auction contract
-        uint256 dec;    // Token decimals
         string  name;   // Token name
         string  symbol; // Token symbol
     }
@@ -155,7 +155,7 @@ contract IlkRegistry {
         (address _clip,,,) = dog.ilks(_ilk);
 
         address  _xlip;
-        uint128  _class;
+        uint96  _class;
         if (_clip != address(0)) {
             require(ClipLike(_clip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
             require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
@@ -190,13 +190,13 @@ contract IlkRegistry {
 
         ilks.push(_ilk);
         ilkData[ilks[ilks.length - 1]] = Ilk(
-            uint128(ilks.length - 1),
-            _class,
-            join.gem(),
-            _pip,
+            uint96(ilks.length - 1),
             address(join),
+            join.gem(),
+            uint8(join.dec()),
+            _class,
+            _pip,
             _xlip,
-            join.dec(),
             name,
             symbol
         );
@@ -236,8 +236,8 @@ contract IlkRegistry {
 
     // Authed edit function
     function file(bytes32 ilk, bytes32 what, uint256 data) external auth {
-        if      (what == "class") { require (data <= uint128(-1)); ilkData[ilk].class = uint128(data); }
-        else if (what == "dec")   ilkData[ilk].dec   = data;
+        if      (what == "class") { require (data <= uint96(-1)); ilkData[ilk].class = uint96(data); }
+        else if (what == "dec")   { require (data <= uint8(-1));  ilkData[ilk].dec   = uint8(data); }
         else revert("IlkRegistry/file-unrecognized-param-uint256");
     }
 
@@ -258,7 +258,7 @@ contract IlkRegistry {
         // Replace the ilk we are removing
         ilks[_index] = _moveIlk;
         // Update the array position for the moved ilk
-        ilkData[_moveIlk].pos = uint128(_index);
+        ilkData[_moveIlk].pos = uint96(_index);
         // Trim off the end of the ilks array
         ilks.pop();
         // Delete struct data
@@ -381,35 +381,36 @@ contract IlkRegistry {
     //  Governance managed
     function updateAuth(
             bytes32 ilk,
-            uint128 class,
+            uint96  class,
             address gem,
+            uint8   dec,
             address pip,
             address join,
             address xlip,
-            uint256 dec,
             string calldata name,
-            string calldata symbol)
+            string calldata symbol
+            )
         external auth {
-            require(class != 0, "IlkRegistry/invalid-type");
-            uint128 pos;
+            require(class != 0 && class <= uint96(-1), "IlkRegistry/invalid-class");
+            uint96 _pos;
 
             if (ilkData[ilk].class == 0) {
                 ilks.push(ilk);
-                pos = uint128(ilks.length - 1);
+                _pos = uint96(ilks.length - 1);
                 emit AddIlk(ilk);
             } else {
-                pos = ilkData[ilk].pos;
+                _pos = ilkData[ilk].pos;
                 emit UpdateIlk(ilk);
             }
 
-            ilkData[ilks[pos]] = Ilk(
-                pos,
-                class,
-                gem,
-                pip,
+            ilkData[ilks[_pos]] = Ilk(
+                _pos,
                 join,
-                xlip,
+                gem,
                 dec,
+                class,
+                pip,
+                xlip,
                 name,
                 symbol
             );
