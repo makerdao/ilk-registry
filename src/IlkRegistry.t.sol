@@ -436,10 +436,8 @@ contract DssIlkRegistryTest is DSTest {
     function testUpdate_dss() public {
         registry.add(ilks["BAT-A"].join);
         assertEq(registry.pip("BAT-A"), ilks["BAT-A"].pip);
-        assertEq(registry.xlip("BAT-A"), ilks["BAT-A"].flip);
         registry.update("BAT-A");
         assertEq(registry.pip("BAT-A"), ilks["BAT-A"].pip);
-        assertEq(registry.xlip("BAT-A"), ilks["BAT-A"].flip);
     }
 
     function testUpdateChanged_dss() public {
@@ -448,12 +446,10 @@ contract DssIlkRegistryTest is DSTest {
         assertEq(registry.xlip("USDC-A"), ilks["USDC-A"].flip);
 
         // Test spell updates to USDC pip and flip to match BAT
-        cat.file("USDC-A", "flip", ilks["BAT-A"].flip);
         spot.file("USDC-A", "pip", ilks["BAT-A"].pip);
 
         registry.update("USDC-A");
         assertEq(registry.pip("USDC-A"), ilks["BAT-A"].pip);
-        assertEq(registry.xlip("USDC-A"), ilks["BAT-A"].flip);
     }
 
     function testFileAddress_dss() public {
@@ -481,9 +477,9 @@ contract DssIlkRegistryTest is DSTest {
 
         registry.file(bytes32("cat"), address(cat));
         assertEq(address(cat), address(registry.cat()));
+        registry.removeAuth("WBTC-A");
+        registry.add(ilks["WBTC-A"].join);
 
-        assertEq(ilks["WBTC-A"].flip, address(registry.xlip("WBTC-A")));
-        registry.update("WBTC-A");
         assertEq(address(flip), address(registry.xlip("WBTC-A")));
     }
 
@@ -501,9 +497,9 @@ contract DssIlkRegistryTest is DSTest {
 
         registry.file(bytes32("dog"), address(dog));
         assertEq(address(dog), address(registry.dog()));
+        registry.removeAuth("CLIP-A");
+        registry.add(ilks["CLIP-A"].join);
 
-        assertEq(ilks["CLIP-A"].flip, address(registry.xlip("CLIP-A")));
-        registry.update("CLIP-A");
         assertEq(address(clip), address(registry.xlip("CLIP-A")));
     }
 

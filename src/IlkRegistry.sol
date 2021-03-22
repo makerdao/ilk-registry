@@ -372,27 +372,7 @@ contract IlkRegistry {
         (address _pip,) = spot.ilks(ilk);
         require(_pip != address(0), "IlkRegistry/pip-invalid");
 
-        (address _clip,,,) = dog.ilks(ilk);
-        (address _flip,,)  = cat.ilks(ilk);
-        address  _xlip;
-        uint128 _class;
-        if (_clip != address(0)) {
-            require(ClipLike(_clip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
-            require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
-            _xlip = _clip;
-            _class = 1;
-        } else if (_flip != address(0)) {
-            require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
-            require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
-            _xlip = _flip;
-            _class = 2;
-        } else {
-            revert("IlkRegistry/invalid-auction-contract");
-        }
-
-        ilkData[ilk].class  = _class;
         ilkData[ilk].pip    = _pip;
-        ilkData[ilk].xlip   = _xlip;
         emit UpdateIlk(ilk);
     }
 
