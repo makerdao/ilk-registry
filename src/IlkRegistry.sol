@@ -381,40 +381,40 @@ contract IlkRegistry {
     // Force addition or update of a collateral type. (i.e. for RWA, etc.)
     //  Governance managed
     function updateAuth(
-            bytes32 ilk,
-            uint256 class,
-            address gem,
-            uint256 dec,
-            address pip,
-            address join,
-            address xlip,
-            string calldata name,
-            string calldata symbol
+            bytes32 _ilk,
+            uint256 _class,
+            address _gem,
+            uint256 _dec,
+            address _pip,
+            address _join,
+            address _xlip,
+            string calldata _name,
+            string calldata _symbol
             )
         external auth {
-            require(class != 0 && class <= uint96(-1), "IlkRegistry/invalid-class");
-            require(dec <= uint8(-1), "IlkRegistry/invalid-dec");
+            require(_class != 0 && _class <= uint96(-1), "IlkRegistry/invalid-class");
+            require(_dec <= uint8(-1), "IlkRegistry/invalid-dec");
             uint96 _pos;
 
-            if (ilkData[ilk].class == 0) {
-                ilks.push(ilk);
+            if (ilkData[_ilk].class == 0) {
+                ilks.push(_ilk);
                 _pos = uint96(ilks.length - 1);
-                emit AddIlk(ilk);
+                emit AddIlk(_ilk);
             } else {
-                _pos = ilkData[ilk].pos;
-                emit UpdateIlk(ilk);
+                _pos = ilkData[_ilk].pos;
+                emit UpdateIlk(_ilk);
             }
 
             ilkData[ilks[_pos]] = Ilk(
                 _pos,
-                join,
-                gem,
-                uint8(dec),
-                uint96(class),
-                pip,
-                xlip,
-                name,
-                symbol
+                _join,
+                _gem,
+                uint8(_dec),
+                uint96(_class),
+                _pip,
+                _xlip,
+                _name,
+                _symbol
             );
     }
 
