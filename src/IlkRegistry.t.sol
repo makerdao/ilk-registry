@@ -420,11 +420,12 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["BAT-A"].join);
         registry.add(ilks["WBTC-A"].join);
         registry.add(ilks["USDC-A"].join);
-        (string memory name, string memory symbol, uint256 dec,
+        (string memory name, string memory symbol, uint256 class, uint256 dec,
         address gem, address pip, address join, address flip) = registry.info(ilks["USDC-A"].ilk);
 
         assertEq(name,   ilks["USDC-A"].name);
         assertEq(symbol, ilks["USDC-A"].symbol);
+        assertEq(class,  ilks["USDC-A"].class);
         assertEq(dec,    ilks["USDC-A"].dec);
         assertEq(gem,    ilks["USDC-A"].gem);
         assertEq(pip,    ilks["USDC-A"].pip);

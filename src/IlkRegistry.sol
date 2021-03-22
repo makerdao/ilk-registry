@@ -296,6 +296,7 @@ contract IlkRegistry {
     function info(bytes32 ilk) external view returns (
         string memory name,
         string memory symbol,
+        uint256 class,
         uint256 dec,
         address gem,
         address pip,
@@ -306,6 +307,7 @@ contract IlkRegistry {
         return (
             _ilk.name,
             _ilk.symbol,
+            _ilk.class,
             _ilk.dec,
             _ilk.gem,
             _ilk.pip,
