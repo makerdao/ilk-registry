@@ -153,7 +153,7 @@ contract IlkRegistry {
         require(_pip != address(0), "IlkRegistry/pip-invalid");
 
         (address _clip,,,) = dog.ilks(_ilk);
-        (address _flip,,)  = cat.ilks(_ilk);
+
         address  _xlip;
         uint128  _class;
         if (_clip != address(0)) {
@@ -161,13 +161,13 @@ contract IlkRegistry {
             require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
             _xlip = _clip;
             _class = 1;
-        } else if (_flip != address(0)) {
+        } else {
+            (address _flip,,)  = cat.ilks(_ilk);
+            require(_flip != address(0), "IlkRegistry/invalid-auction-contract");
             require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
             require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
             _xlip = _flip;
             _class = 2;
-        } else {
-            revert("IlkRegistry/invalid-auction-contract");
         }
 
         string memory name = bytes32ToStr(_ilk);
