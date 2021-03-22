@@ -70,6 +70,7 @@ contract DssIlkRegistryTest is DSTest {
 
     struct Ilk {
         bytes32 ilk;
+        uint256 class;
         address pip;
         address gem;
         address join;
@@ -122,6 +123,7 @@ contract DssIlkRegistryTest is DSTest {
         cat.file(name, "flip", address(flip));
 
         ilks[name].ilk    = name;
+        ilks[name].class  = 2;
         ilks[name].pip    = address(pip);
         ilks[name].gem    = address(coin);
         ilks[name].join   = address(join);
@@ -149,6 +151,7 @@ contract DssIlkRegistryTest is DSTest {
         dog.file(name, "clip", address(clip));
 
         ilks[name].ilk    = name;
+        ilks[name].class  = 1;
         ilks[name].pip    = address(pip);
         ilks[name].gem    = address(coin);
         ilks[name].join   = address(join);
@@ -175,6 +178,7 @@ contract DssIlkRegistryTest is DSTest {
         cat.file(name, "flip", address(flip));
 
         ilks[name].ilk    = name;
+        ilks[name].class  = 2;
         ilks[name].pip    = address(pip);
         ilks[name].gem    = address(coin);
         ilks[name].join   = address(join);
@@ -249,10 +253,11 @@ contract DssIlkRegistryTest is DSTest {
     function testIlkData_dss() public {
         registry.add(ilks["ETH-A"].join);
         registry.add(ilks["BAT-A"].join);
-        (uint128 pos, uint128 code, address gem, address pip, address join,
+        (uint128 pos, uint128 class, address gem, address pip, address join,
         address flip, uint256 dec, string memory name,
         string memory symbol) = registry.ilkData(ilks["BAT-A"].ilk);
         assertEq(uint256(pos), 1); // 0-indexed
+        assertEq(class,  ilks["BAT-A"].class);
         assertEq(gem,    ilks["BAT-A"].gem);
         assertEq(pip,    ilks["BAT-A"].pip);
         assertEq(join,   ilks["BAT-A"].join);

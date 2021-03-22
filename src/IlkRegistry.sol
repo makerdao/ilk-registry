@@ -101,7 +101,7 @@ contract IlkRegistry {
 
     struct Ilk {
         uint128 pos;    // Index in ilks array
-        uint128 code;   // Class code (1 - clip, 2 - flip, 3+ - other)
+        uint128 class;  // Classification code (1 - clip, 2 - flip, 3+ - other)
         address gem;    // The token contract
         address pip;    // Token price
         address join;   // DSS GemJoin adapter
@@ -155,17 +155,17 @@ contract IlkRegistry {
         (address _clip,,,) = dog.ilks(_ilk);
         (address _flip,,)  = cat.ilks(_ilk);
         address  _xlip;
-        uint128  _code;
+        uint128  _class;
         if (_clip != address(0)) {
             require(ClipLike(_clip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
             require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
             _xlip = _clip;
-            _code = 1;
+            _class = 1;
         } else if (_flip != address(0)) {
             require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
             require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
             _xlip = _flip;
-            _code = 2;
+            _class = 2;
         } else {
             revert("IlkRegistry/invalid-auction-contract");
         }
@@ -191,7 +191,7 @@ contract IlkRegistry {
         ilks.push(_ilk);
         ilkData[ilks[ilks.length - 1]] = Ilk(
             uint128(ilks.length - 1),
-            _code,
+            _class,
             join.gem(),
             _pip,
             address(join),
@@ -323,8 +323,8 @@ contract IlkRegistry {
     //  1  - Flipper
     //  2  - Clipper
     //  3+ - RWA or custom adapter
-    function code(bytes32 ilk) external view returns (uint256) {
-        return ilkData[ilk].code;
+    function class(bytes32 ilk) external view returns (uint256) {
+        return ilkData[ilk].class;
     }
 
     // The token address
@@ -373,24 +373,24 @@ contract IlkRegistry {
         (address _clip,,,) = dog.ilks(ilk);
         (address _flip,,)  = cat.ilks(ilk);
         address  _xlip;
-        uint128 _code;
+        uint128 _class;
         if (_clip != address(0)) {
             require(ClipLike(_clip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
             require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
             _xlip = _clip;
-            _code = 1;
+            _class = 1;
         } else if (_flip != address(0)) {
             require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
             require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
             _xlip = _flip;
-            _code = 2;
+            _class = 2;
         } else {
             revert("IlkRegistry/invalid-auction-contract");
         }
 
-        ilkData[ilk].code  = _code;
-        ilkData[ilk].pip   = _pip;
-        ilkData[ilk].xlip  = _xlip;
+        ilkData[ilk].class  = _class;
+        ilkData[ilk].pip    = _pip;
+        ilkData[ilk].xlip   = _xlip;
         emit UpdateIlk(ilk);
     }
 
@@ -398,7 +398,7 @@ contract IlkRegistry {
     //  Governance managed
     function updateAuth(
             bytes32 ilk,
-            uint128 code,
+            uint128 class,
             address gem,
             address pip,
             address join,
@@ -407,10 +407,10 @@ contract IlkRegistry {
             string calldata name,
             string calldata symbol)
         external auth {
-            require(code != 0, "IlkRegistry/invalid-type");
+            require(class != 0, "IlkRegistry/invalid-type");
             uint128 pos;
 
-            if (ilkData[ilk].code == 0) {
+            if (ilkData[ilk].class == 0) {
                 ilks.push(ilk);
                 pos = uint128(ilks.length - 1);
                 emit AddIlk(ilk);
@@ -421,7 +421,7 @@ contract IlkRegistry {
 
             ilkData[ilks[pos]] = Ilk(
                 pos,
-                code,
+                class,
                 gem,
                 pip,
                 join,
