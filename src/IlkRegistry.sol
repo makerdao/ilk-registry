@@ -236,7 +236,8 @@ contract IlkRegistry {
 
     // Authed edit function
     function file(bytes32 ilk, bytes32 what, uint256 data) external auth {
-        if      (what == "dec")  ilkData[ilk].dec  = data;
+        if      (what == "class") { require (data <= uint128(-1)); ilkData[ilk].class = uint128(data); }
+        else if (what == "dec")   ilkData[ilk].dec   = data;
         else revert("IlkRegistry/file-unrecognized-param-uint256");
     }
 

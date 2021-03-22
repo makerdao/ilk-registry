@@ -531,6 +531,8 @@ contract DssIlkRegistryTest is DSTest {
         assertEq(registry.dec(ilks["WBTC-A"].ilk), ilks["WBTC-A"].dec);
         registry.file(ilks["WBTC-A"].ilk, bytes32("dec"), 1);
         assertEq(registry.dec(ilks["WBTC-A"].ilk), 1);
+        registry.file(ilks["WBTC-A"].ilk, bytes32("class"), 500);
+        assertEq(registry.class(ilks["WBTC-A"].ilk), 500);
     }
 
     function testFailFileUint256_dss() public {
