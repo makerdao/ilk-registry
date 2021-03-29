@@ -702,4 +702,15 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["BAT-A"].join);
         registry.file(ilks["BAT-A"].ilk, bytes32("test"), ilks["BAT-A"].name);
     }
+
+    function testGetClassCode() public {
+        assertEq(registry.classCodes(1), "Clipper-type collateral");
+        assertEq(registry.classCodes(2), "Flipper-type collateral");
+    }
+
+    function testSetClassCode() public {
+        registry.addClassCode(3, "Real world asset collateral");
+
+        assertEq(registry.classCodes(3), "Real world asset collateral");
+    }
 }

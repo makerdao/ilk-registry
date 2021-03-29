@@ -113,6 +113,8 @@ contract IlkRegistry {
     mapping (bytes32 => Ilk) public ilkData;
     bytes32[] ilks;
 
+    mapping (uint96 => string) public classCodes;
+
     // Initialize the registry
     constructor(address vat_, address dog_, address cat_, address spot_) public {
 
@@ -131,6 +133,9 @@ contract IlkRegistry {
         require(spot.live() == 1,       "IlkRegistry/spot-not-live");
 
         gemInfo = new GemInfo();
+
+        classCodes[1] = "Clipper-type collateral";
+        classCodes[2] = "Flipper-type collateral";
 
         wards[msg.sender] = 1;
     }
@@ -218,6 +223,11 @@ contract IlkRegistry {
     function removeAuth(bytes32 ilk) external auth {
         _remove(ilk);
         emit RemoveIlk(ilk);
+    }
+
+    function addClassCode(uint256 class, string calldata classCode) external auth {
+        require(class <= uint96(-1) && class != 0, "IlkRegistry/invalid-class-code");
+        classCodes[uint96(class)] = classCode;
     }
 
     // Authed edit function
