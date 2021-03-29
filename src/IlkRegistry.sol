@@ -14,8 +14,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-pragma solidity ^0.6.7;
+pragma solidity ^0.6.12;
 
 interface JoinLike {
   function vat()          external view returns (address);
@@ -92,7 +91,7 @@ contract IlkRegistry {
         _;
     }
 
-    VatLike  public immutable vat;
+    VatLike  public  immutable vat;
     GemInfo  private immutable gemInfo;
 
     DogLike  public dog;
@@ -100,15 +99,15 @@ contract IlkRegistry {
     SpotLike public spot;
 
     struct Ilk {
-        uint96  pos;    // Index in ilks array
-        address join;   // DSS GemJoin adapter
-        address gem;    // The token contract
-        uint8   dec;    // Token decimals
-        uint96  class;  // Classification code (1 - clip, 2 - flip, 3+ - other)
-        address pip;    // Token price
-        address xlip;   // Auction contract
-        string  name;   // Token name
-        string  symbol; // Token symbol
+        uint96  pos;     // Index in ilks array
+        address join;    // DSS GemJoin adapter
+        address gem;     // The token contract
+        uint8   dec;     // Token decimals
+        uint96  class;   // Classification code (1 - clip, 2 - flip, 3+ - other)
+        address pip;     // Token price
+        address xlip;    // Auction contract
+        string  name;    // Token name
+        string  symbol;  // Token symbol
     }
 
     mapping (bytes32 => Ilk) public ilkData;
@@ -122,14 +121,14 @@ contract IlkRegistry {
         cat = CatLike(cat_);
         spot = SpotLike(spot_);
 
-        require(dog.vat() == vat_, "IlkRegistry/invalid-dog-vat");
-        require(cat.vat() == vat_, "IlkRegistry/invalid-cat-vat");
-        require(spot.vat() == vat_, "IlkRegistry/invalid-spotter-vat");
-        require(_vat.wards(cat_) == 1, "IlkRegistry/cat-not-authorized");
+        require(dog.vat() == vat_,      "IlkRegistry/invalid-dog-vat");
+        require(cat.vat() == vat_,      "IlkRegistry/invalid-cat-vat");
+        require(spot.vat() == vat_,     "IlkRegistry/invalid-spotter-vat");
+        require(_vat.wards(cat_) == 1,  "IlkRegistry/cat-not-authorized");
         require(_vat.wards(spot_) == 1, "IlkRegistry/spot-not-authorized");
-        require(_vat.live() == 1, "IlkRegistry/vat-not-live");
-        require(cat.live() == 1, "IlkRegistry/cat-not-live");
-        require(spot.live() == 1, "IlkRegistry/spot-not-live");
+        require(_vat.live() == 1,       "IlkRegistry/vat-not-live");
+        require(cat.live() == 1,        "IlkRegistry/cat-not-live");
+        require(spot.live() == 1,       "IlkRegistry/spot-not-live");
 
         gemInfo = new GemInfo();
 
