@@ -318,6 +318,24 @@ contract DssIlkRegistryTest is DSTest {
         assertEq(registry.count(), 1);
     }
 
+    function testFailUpdateAuthClass() public {
+        bytes32 _ilk = "RWA001";
+
+        assertEq(registry.count(), 0);
+
+        registry.updateAuth(
+            _ilk,
+            ilks[_ilk].join,
+            ilks[_ilk].gem,
+            ilks[_ilk].dec,
+            0,                      // Fail on class 0
+            ilks[_ilk].pip,
+            ilks[_ilk].flip,
+            ilks[_ilk].name,
+            ilks[_ilk].symbol
+        );
+    }
+
     function testUpdateRWAViaUpdateAuth() public {
         bytes32 _ilk = "RWA001";
         registry.updateAuth(ilks[_ilk].ilk, ilks[_ilk].join, ilks[_ilk].gem, ilks[_ilk].dec, ilks[_ilk].class, ilks[_ilk].pip, ilks[_ilk].flip, ilks[_ilk].name, ilks[_ilk].symbol);
@@ -656,6 +674,16 @@ contract DssIlkRegistryTest is DSTest {
     function testFailFileUint256_dss() public {
         registry.add(ilks["WBTC-A"].join);
         registry.file(ilks["WBTC-A"].ilk, bytes32("test"), ilks["BAT-A"].dec);
+    }
+
+    function testFailFileClassTooBig_dss() public {
+        registry.add(ilks["WBTC-A"].join);
+        registry.file(ilks["WBTC-A"].ilk, bytes32("class"), uint96(-1) + 1);
+    }
+
+    function testFailFileClassZero_dss() public {
+        registry.add(ilks["WBTC-A"].join);
+        registry.file(ilks["WBTC-A"].ilk, bytes32("class"), 0);
     }
 
     function testFileString_dss() public {
