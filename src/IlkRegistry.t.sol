@@ -294,7 +294,55 @@ contract DssIlkRegistryTest is DSTest {
         registry.add(ilks["ETH-A"].join);
         registry.add(ilks["BAT-A"].join);
         registry.add(ilks["DAI-A"].join);
-        assertEq(registry.count(), 3);
+        registry.add(ilks["LINK-A"].join);
+        assertEq(registry.count(), 4);
+    }
+
+    function testAddRWAViaUpdateAuth() public {
+        bytes32 _ilk = "RWA001";
+
+        assertEq(registry.count(), 0);
+
+        registry.updateAuth(
+            _ilk,
+            ilks[_ilk].join,
+            ilks[_ilk].gem,
+            ilks[_ilk].dec,
+            ilks[_ilk].class,
+            ilks[_ilk].pip,
+            ilks[_ilk].flip,
+            ilks[_ilk].name,
+            ilks[_ilk].symbol
+        );
+
+        assertEq(registry.count(), 1);
+    }
+
+    function testUpdateRWAViaUpdateAuth() public {
+        bytes32 _ilk = "RWA001";
+        registry.updateAuth(ilks[_ilk].ilk, ilks[_ilk].join, ilks[_ilk].gem, ilks[_ilk].dec, ilks[_ilk].class, ilks[_ilk].pip, ilks[_ilk].flip, ilks[_ilk].name, ilks[_ilk].symbol);
+
+        registry.updateAuth(
+            _ilk,        // _ilk
+            address(1),  // _join
+            address(2),  // _gem
+            3,           // _dec
+            4,           // _class
+            address(5),  // _pip
+            address(6),  // _xlip
+            "7",         // _name
+            "8"          // _symbol
+        );
+
+        assertEq(registry.count(), 1);
+        assertEq(registry.join(_ilk), address(1));
+        assertEq(registry.gem(_ilk), address(2));
+        assertEq(registry.dec(_ilk), 3);
+        assertEq(registry.class(_ilk), 4);
+        assertEq(registry.pip(_ilk), address(5));
+        assertEq(registry.xlip(_ilk), address(6));
+        assertEq(registry.name(_ilk), "7");
+        assertEq(registry.symbol(_ilk), "8");
     }
 
     function testIlkData_dss() public {
