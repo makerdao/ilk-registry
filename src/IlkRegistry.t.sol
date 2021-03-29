@@ -20,6 +20,7 @@ import {Flopper} from 'dss/flop.sol';
 import {GemJoin} from 'dss/join.sol';
 
 import "./test/fixtures/UnDai.sol";
+import "./test/fixtures/UnRWAUrn.sol";
 import "./IlkRegistry.sol";
 
 interface Hevm {
@@ -215,6 +216,41 @@ contract DssIlkRegistryTest is DSTest {
         ilks[name].symbol = bytes32ToStr(name);
     }
 
+    function initRWACollateral(bytes32 name) internal returns (Ilk memory) {
+        Dai coin = new Dai(1);
+        coin.mint(address(this), 20 ether);
+
+        vat.init(name);
+        GemJoin gjoin = new GemJoin(address(vat), name, address(coin));
+        vat.rely(address(gjoin));
+        DaiJoin djoin = new DaiJoin(address(vat), address(coin));
+        vat.rely(address(djoin));
+
+        DSValue pip = new DSValue();
+        spot.file(name, "pip", address(pip));
+
+        address _outputConduit = address(1);
+
+        UnRWAUrn _urn = new UnRWAUrn(
+            address(vat),   // vat
+            address(0),     // jug
+            address(gjoin), // gemJoin
+            address(djoin), // daiJoin
+            _outputConduit  // outputConduit
+        );
+        gjoin.rely(address(_urn));
+
+        ilks[name].ilk    = name;
+        ilks[name].class  = 3;
+        ilks[name].pip    = address(pip);
+        ilks[name].gem    = address(coin);
+        ilks[name].join   = address(gjoin);
+        ilks[name].flip   = _outputConduit;
+        ilks[name].dec    = gjoin.dec();
+        ilks[name].name   = coin.name();
+        ilks[name].symbol = coin.symbol();
+    }
+
     function setUp() public {
         vat  = new Vat();
         cat  = new Cat(address(vat));
@@ -238,9 +274,19 @@ contract DssIlkRegistryTest is DSTest {
         initCollateral("USDC-A");
         initCollateral("USDC-B");
         initClippableCollateral("CLIP-A");
+        initClippableCollateral("LINK-A");
         initStandardCollateral("DAI-A");
         initMissingCollateral("UNDAI-A");
+        initRWACollateral("RWA001");
+        initRWACollateral("RWA002");
         registry = new IlkRegistry(address(vat), address(dog), address(cat), address(spot));
+    }
+
+    function isIlkInReg(bytes32 _ilk) public returns (bool) {
+        bytes32[] memory _list = registry.list();
+        for (uint256 i = 0; i < _list.length; i++) {
+            if (_list[i] == _ilk) { return true; }
+        }
     }
 
     function testAddIlk_dss() public {
@@ -382,6 +428,27 @@ contract DssIlkRegistryTest is DSTest {
 
         registry.remove(ilks["BAT-A"].ilk);
         assertEq(registry.count(), 2);
+    }
+
+    function testRemoveCagedClippable_dss() public {
+        registry.add(ilks["CLIP-A"].join);
+        registry.add(ilks["WBTC-A"].join);
+        registry.add(ilks["LINK-A"].join);
+
+        GemJoin linkJoin = GemJoin(ilks["LINK-A"].join);
+
+        assertEq(registry.count(), 3);
+        assertTrue(isIlkInReg("LINK-A"));
+        assertEq(linkJoin.live(), 1);
+
+        // Cage the LINK adapter so we can test removing it
+        linkJoin.cage();
+
+        assertEq(linkJoin.live(), 0);
+
+        registry.remove(ilks["LINK-A"].ilk);
+        assertEq(registry.count(), 2);
+        assertTrue(!isIlkInReg("LINK-A"));
     }
 
     function testAuthRemoveLive_dss() public {

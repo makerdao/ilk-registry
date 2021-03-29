@@ -20,7 +20,7 @@ import {Jug}              from 'dss/jug.sol';
 import {Dai}              from 'dss/dai.sol';
 import {DaiJoin, GemJoin} from 'dss/join.sol';
 
-contract RwaUrn {
+contract UnRWAUrn {
     // --- auth ---
     mapping (address => uint256) public wards;
     mapping (address => uint256) public can;
