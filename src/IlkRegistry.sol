@@ -371,6 +371,8 @@ contract IlkRegistry {
     function update(bytes32 ilk) external {
         require(JoinLike(ilkData[ilk].join).vat() == address(vat), "IlkRegistry/invalid-ilk");
         require(JoinLike(ilkData[ilk].join).live() == 1, "IlkRegistry/ilk-not-live-use-remove-instead");
+        uint96 _class = ilkData[ilk].class;
+        require(_class == 1 || _class == 2, "IlkRegistry/invalid-class");
 
         (address _pip,) = spot.ilks(ilk);
         require(_pip != address(0), "IlkRegistry/pip-invalid");
