@@ -30,16 +30,16 @@ interface VatLike {
   function live()         external view returns (uint256);
 }
 
-interface CatLike {
-  function vat()          external view returns (address);
-  function live()         external view returns (uint256);
-  function ilks(bytes32)  external view returns (address, uint256, uint256);
-}
-
 interface DogLike {
   function vat()          external view returns (address);
   function live()         external view returns (uint256);
   function ilks(bytes32)  external view returns (address, uint256, uint256, uint256);
+}
+
+interface CatLike {
+  function vat()          external view returns (address);
+  function live()         external view returns (uint256);
+  function ilks(bytes32)  external view returns (address, uint256, uint256);
 }
 
 interface FlipLike {
@@ -95,8 +95,8 @@ contract IlkRegistry {
     VatLike  public immutable vat;
     GemInfo  private immutable gemInfo;
 
-    CatLike  public cat;
     DogLike  public dog;
+    CatLike  public cat;
     SpotLike public spot;
 
     struct Ilk {
@@ -221,8 +221,8 @@ contract IlkRegistry {
 
     // Authed edit function
     function file(bytes32 what, address data) external auth {
-        if      (what == "cat")  cat  = CatLike(data);
-        else if (what == "dog")  dog  = DogLike(data);
+        if      (what == "dog")  dog  = DogLike(data);
+        else if (what == "cat")  cat  = CatLike(data);
         else if (what == "spot") spot = SpotLike(data);
         else revert("IlkRegistry/file-unrecognized-param-address");
     }
