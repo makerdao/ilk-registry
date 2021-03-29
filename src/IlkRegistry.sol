@@ -138,14 +138,14 @@ contract IlkRegistry {
 
     // Pass an active join adapter to the registry to add it to the set
     function add(address adapter) external {
-        JoinLike join = JoinLike(adapter);
+        JoinLike _join = JoinLike(adapter);
 
         // Validate adapter
-        require(join.vat() == address(vat), "IlkRegistry/invalid-join-adapter-vat");
-        require(vat.wards(address(join)) == 1, "IlkRegistry/adapter-not-authorized");
+        require(_join.vat() == address(vat),    "IlkRegistry/invalid-join-adapter-vat");
+        require(vat.wards(address(_join)) == 1, "IlkRegistry/adapter-not-authorized");
 
         // Validate ilk
-        bytes32 _ilk = join.ilk();
+        bytes32 _ilk = _join.ilk();
         require(_ilk != 0, "IlkRegistry/ilk-adapter-invalid");
         require(ilkData[_ilk].join == address(0), "IlkRegistry/ilk-already-exists");
 
@@ -171,7 +171,7 @@ contract IlkRegistry {
         }
 
         string memory name = bytes32ToStr(_ilk);
-        try gemInfo.name(join.gem()) returns (string memory _name) {
+        try gemInfo.name(_join.gem()) returns (string memory _name) {
             if (bytes(_name).length != 0) {
                 name = _name;
             }
@@ -180,7 +180,7 @@ contract IlkRegistry {
         }
 
         string memory symbol = bytes32ToStr(_ilk);
-        try gemInfo.symbol(join.gem()) returns (string memory _symbol) {
+        try gemInfo.symbol(_join.gem()) returns (string memory _symbol) {
             if (bytes(_symbol).length != 0) {
                 symbol = _symbol;
             }
@@ -191,9 +191,9 @@ contract IlkRegistry {
         ilks.push(_ilk);
         ilkData[ilks[ilks.length - 1]] = Ilk(
             uint96(ilks.length - 1),
-            address(join),
-            join.gem(),
-            uint8(join.dec()),
+            address(_join),
+            _join.gem(),
+            uint8(_join.dec()),
             _class,
             _pip,
             _xlip,
@@ -206,9 +206,11 @@ contract IlkRegistry {
 
     // Anyone can remove an ilk if the adapter has been caged
     function remove(bytes32 ilk) external {
-        JoinLike join = JoinLike(ilkData[ilk].join);
-        require(address(join) != address(0), "IlkRegistry/invalid-ilk");
-        require(join.live() == 0, "IlkRegistry/ilk-live");
+        JoinLike _join = JoinLike(ilkData[ilk].join);
+        require(address(_join) != address(0), "IlkRegistry/invalid-ilk");
+        uint96 _class = ilkData[ilk].class;
+        require(_class == 1 || _class == 2, "IlkRegistry/invalid-class");
+        require(_join.live() == 0, "IlkRegistry/ilk-live");
         _remove(ilk);
         emit RemoveIlk(ilk);
     }
@@ -290,7 +292,7 @@ contract IlkRegistry {
 
     // Get the ilk at a specific position in the array
     function get(uint256 pos) external view returns (bytes32) {
-        require(pos < ilks.length);
+        require(pos < ilks.length, "IlkRegistry/index-out-of-range");
         return ilks[pos];
     }
 
@@ -419,10 +421,10 @@ contract IlkRegistry {
     }
 
     function bytes32ToStr(bytes32 _bytes32) internal pure returns (string memory) {
-        bytes memory bytesArray = new bytes(32);
+        bytes memory _bytesArray = new bytes(32);
         for (uint256 i; i < 32; i++) {
-            bytesArray[i] = _bytes32[i];
+            _bytesArray[i] = _bytes32[i];
         }
-        return string(bytesArray);
+        return string(_bytesArray);
     }
 }
