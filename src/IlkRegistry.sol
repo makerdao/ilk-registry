@@ -178,6 +178,7 @@ contract IlkRegistry {
             emit SymbolError(_ilk);
         }
 
+        require(ilks.length < uint96(-1), "IlkRegistry/too-many-ilks");
         ilks.push(_ilk);
         ilkData[ilks[ilks.length - 1]] = Ilk(
             uint96(ilks.length - 1),
@@ -392,6 +393,7 @@ contract IlkRegistry {
             uint96 _pos;
 
             if (ilkData[_ilk].class == 0) {
+                require(ilks.length < uint96(-1), "IlkRegistry/too-many-ilks");
                 ilks.push(_ilk);
                 _pos = uint96(ilks.length - 1);
                 emit AddIlk(_ilk);
