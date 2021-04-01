@@ -154,14 +154,9 @@ contract IlkRegistry {
         (address _xlip,,,) = dog.ilks(_ilk);
 
         uint96  _class = 1;
-        if (_xlip != address(0)) {
-            require(ClipLike(_xlip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
-            require(ClipLike(_xlip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
-        } else {
+        if (_xlip == address(0)) {
             (_xlip,,)  = cat.ilks(_ilk);
             require(_xlip != address(0), "IlkRegistry/invalid-auction-contract");
-            require(FlipLike(_xlip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
-            require(FlipLike(_xlip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
             _class = 2;
         }
 
