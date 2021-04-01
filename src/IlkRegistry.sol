@@ -76,6 +76,10 @@ contract IlkRegistry {
 
     event Rely(address usr);
     event Deny(address usr);
+    event File(bytes32 what, address data);
+    event File(bytes32 ilk, bytes32 what, address data);
+    event File(bytes32 ilk, bytes32 what, uint256 data);
+    event File(bytes32 ilk, bytes32 what, string data);
     event AddIlk(bytes32 ilk);
     event RemoveIlk(bytes32 ilk);
     event UpdateIlk(bytes32 ilk);
@@ -218,6 +222,7 @@ contract IlkRegistry {
         else if (what == "cat")  cat  = CatLike(data);
         else if (what == "spot") spot = SpotLike(data);
         else revert("IlkRegistry/file-unrecognized-param-address");
+        emit File(what, data);
     }
 
     // Authed edit function
@@ -226,6 +231,7 @@ contract IlkRegistry {
         else if (what == "join") ilkData[ilk].join = data;
         else if (what == "xlip") ilkData[ilk].xlip = data;
         else revert("IlkRegistry/file-unrecognized-param-address");
+        emit File(ilk, what, data);
     }
 
     // Authed edit function
@@ -233,6 +239,7 @@ contract IlkRegistry {
         if      (what == "class") { require(data <= uint96(-1) && data != 0); ilkData[ilk].class = uint96(data); }
         else if (what == "dec")   { require(data <= uint8(-1));  ilkData[ilk].dec   = uint8(data); }
         else revert("IlkRegistry/file-unrecognized-param-uint256");
+        emit File(ilk, what, data);
     }
 
     // Authed edit function
@@ -240,6 +247,7 @@ contract IlkRegistry {
         if      (what == "name")   ilkData[ilk].name   = data;
         else if (what == "symbol") ilkData[ilk].symbol = data;
         else revert("IlkRegistry/file-unrecognized-param-string");
+        emit File(ilk, what, data);
     }
 
     // Remove ilk from the ilks array by replacing the ilk with the
