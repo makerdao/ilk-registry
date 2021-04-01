@@ -151,21 +151,17 @@ contract IlkRegistry {
         (address _pip,) = spot.ilks(_ilk);
         require(_pip != address(0), "IlkRegistry/pip-invalid");
 
-        (address _clip,,,) = dog.ilks(_ilk);
+        (address _xlip,,,) = dog.ilks(_ilk);
 
-        address  _xlip;
-        uint96  _class;
+        uint96  _class = 1;
         if (_clip != address(0)) {
             require(ClipLike(_clip).dog() == address(dog), "IlkRegistry/clip-wrong-dog");
             require(ClipLike(_clip).vat() == address(vat), "IlkRegistry/clip-wrong-vat");
-            _xlip = _clip;
-            _class = 1;
         } else {
-            (address _flip,,)  = cat.ilks(_ilk);
-            require(_flip != address(0), "IlkRegistry/invalid-auction-contract");
-            require(FlipLike(_flip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
-            require(FlipLike(_flip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
-            _xlip = _flip;
+            (address _xlip,,)  = cat.ilks(_ilk);
+            require(_xlip != address(0), "IlkRegistry/invalid-auction-contract");
+            require(FlipLike(_xlip).cat() == address(cat), "IlkRegistry/flip-wrong-cat");
+            require(FlipLike(_xlip).vat() == address(vat), "IlkRegistry/flip-wrong-vat");
             _class = 2;
         }
 
