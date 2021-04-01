@@ -303,7 +303,7 @@ contract DssIlkRegistryTest is DSTest {
 
         assertEq(registry.count(), 0);
 
-        registry.updateAuth(
+        registry.put(
             _ilk,
             ilks[_ilk].join,
             ilks[_ilk].gem,
@@ -323,7 +323,7 @@ contract DssIlkRegistryTest is DSTest {
 
         assertEq(registry.count(), 0);
 
-        registry.updateAuth(
+        registry.put(
             _ilk,
             ilks[_ilk].join,
             ilks[_ilk].gem,
@@ -338,9 +338,9 @@ contract DssIlkRegistryTest is DSTest {
 
     function testUpdateRWAViaUpdateAuth() public {
         bytes32 _ilk = "RWA001";
-        registry.updateAuth(ilks[_ilk].ilk, ilks[_ilk].join, ilks[_ilk].gem, ilks[_ilk].dec, ilks[_ilk].class, ilks[_ilk].pip, ilks[_ilk].flip, ilks[_ilk].name, ilks[_ilk].symbol);
+        registry.put(ilks[_ilk].ilk, ilks[_ilk].join, ilks[_ilk].gem, ilks[_ilk].dec, ilks[_ilk].class, ilks[_ilk].pip, ilks[_ilk].flip, ilks[_ilk].name, ilks[_ilk].symbol);
 
-        registry.updateAuth(
+        registry.put(
             _ilk,        // _ilk
             address(1),  // _join
             address(2),  // _gem

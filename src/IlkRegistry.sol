@@ -375,7 +375,7 @@ contract IlkRegistry {
 
     // Force addition or update of a collateral type. (i.e. for RWA, etc.)
     //  Governance managed
-    function updateAuth(
+    function put(
             bytes32 _ilk,
             address _join,
             address _gem,
