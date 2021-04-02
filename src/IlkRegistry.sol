@@ -184,17 +184,17 @@ contract IlkRegistry {
 
         require(ilks.length < uint96(-1), "IlkRegistry/too-many-ilks");
         ilks.push(_ilk);
-        ilkData[ilks[ilks.length - 1]] = Ilk(
-            uint96(ilks.length - 1),
-            address(_join),
-            _join.gem(),
-            uint8(_join.dec()),
-            _class,
-            _pip,
-            _xlip,
-            name,
-            symbol
-        );
+        ilkData[ilks[ilks.length - 1]] = Ilk({
+            pos: uint96(ilks.length - 1),
+            join: address(_join),
+            gem: _join.gem(),
+            dec: uint8(_join.dec()),
+            class: _class,
+            pip: _pip,
+            xlip: _xlip,
+            name: name,
+            symbol: symbol
+        });
 
         emit AddIlk(_ilk);
     }
@@ -410,17 +410,17 @@ contract IlkRegistry {
                 emit UpdateIlk(_ilk);
             }
 
-            ilkData[ilks[_pos]] = Ilk(
-                _pos,
-                _join,
-                _gem,
-                uint8(_dec),
-                uint96(_class),
-                _pip,
-                _xlip,
-                _name,
-                _symbol
-            );
+            ilkData[ilks[_pos]] = Ilk({
+                pos: _pos,
+                join: _join,
+                gem: _gem,
+                dec: uint8(_dec),
+                class: uint96(_class),
+                pip: _pip,
+                xlip: _xlip,
+                name: _name,
+                symbol: _symbol
+            });
     }
 
     function bytes32ToStr(bytes32 _bytes32) internal pure returns (string memory) {
