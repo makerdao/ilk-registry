@@ -7,7 +7,7 @@
 CWD=$(pwd)
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
-cd "$PARENT_PATH" && cd ..
+cd "$PARENT_PATH"/..
 
 make
 
