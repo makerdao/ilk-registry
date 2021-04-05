@@ -2,6 +2,8 @@
 
 ## Example deployment script for Kovan
 
+[[ "$ETH_RPC_URL" && "$(seth chain)" == "kovan"  ]] || { echo "Please set a kovan ETH_RPC_URL"; exit 1;  }
+
 CWD=$(pwd)
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
