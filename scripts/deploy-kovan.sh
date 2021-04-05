@@ -68,12 +68,30 @@ seth send $REGISTRY "add(address)" "0x03f18d97D25c13FecB15aBee143276D3bD2742De"
 # PAXG-A
 seth send $REGISTRY "add(address)" "0x822248F31bd899DE327A760a78B6C84889aF180D"
 
+
 # put(bytes32 _ilk, address _join, address _gem, uint256 _dec, uint256 _class, address _pip, address _xlip, string calldata _name, string calldata _symbol)
 
-# RWA001-A                                                                                        bytes32 _ilk,                                          address _join,                               address _gem,                                uint256 _dec, uint256 _class, address _pip, address _xlip, string calldata _name, string calldata _symbol
-seth send $REGISTRY "put(bytes32,address,address,uint256,uint256,address,address,string,string)" $(seth --to-bytes32 "$(seth --from-ascii "RWA001-A")") "0x029A554f252373e146f76Fa1a7455f73aBF4d38e" "0x8F9A8cbBdfb93b72d646c8DEd6B4Fe4D86B315cB" "18" "3" "0x09710C9440e5FF5c473efe61d5a2f14cA05A6752" "0x0" '"RWA001-A: 6s Capital"' '"RWA001-A"'
-# NS2DRP-A
-seth send $REGISTRY "put(bytes32,address,address,uint256,uint256,address,address,string,string)" $(seth --to-bytes32 "$(seth --from-ascii "NS2DRP-A")") "0x4B8C10da2B70dE45f7Ea106A961F2Fb79f5bC2bE" "0x1C3765c94aF9b7eB3fdEC69Eddb7Ddf27f2BcFf4" "18" "3" "0x82a561D6f5013766203776a26123ce5B9389109b" "0x0" '"NS2DRP-A: Centrifuge: New Silver"' '"NS2DRP-A"'
+seth send $REGISTRY "put(bytes32,address,address,uint256,uint256,address,address,string,string)" \
+  $(seth --to-bytes32 "$(seth --from-ascii "RWA001-A")") \
+  "0x029A554f252373e146f76Fa1a7455f73aBF4d38e" \
+  "0x8F9A8cbBdfb93b72d646c8DEd6B4Fe4D86B315cB" \
+  "18" \
+  "3" \
+  "0x09710C9440e5FF5c473efe61d5a2f14cA05A6752" \
+  "0x0" \
+  '"RWA001-A: 6s Capital"' \
+  '"RWA001-A"'
+
+seth send $REGISTRY "put(bytes32,address,address,uint256,uint256,address,address,string,string)" \
+  $(seth --to-bytes32 "$(seth --from-ascii "NS2DRP-A")") \
+  "0x4B8C10da2B70dE45f7Ea106A961F2Fb79f5bC2bE" \
+  "0x1C3765c94aF9b7eB3fdEC69Eddb7Ddf27f2BcFf4" \
+  "18" \
+  "3" \
+  "0x82a561D6f5013766203776a26123ce5B9389109b" \
+  "0x0" \
+  '"NS2DRP-A: Centrifuge: New Silver"' \
+  '"NS2DRP-A"'
 
 # RELY pauseProxy
 seth send $REGISTRY "rely(address)" "0x0e4725db88Bb038bBa4C4723e91Ba183BE11eDf3"
