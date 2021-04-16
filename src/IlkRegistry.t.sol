@@ -650,10 +650,12 @@ contract DssIlkRegistryTest is DSTest {
 
         registry.file(ilks["WBTC-A"].ilk, bytes32("gem"),  address(ilks["USDC-A"].gem));
         registry.file(ilks["WBTC-A"].ilk, bytes32("join"), address(ilks["USDC-A"].gem));
+        registry.file(ilks["WBTC-A"].ilk, bytes32("pip"),  address(ilks["USDC-A"].gem));
         registry.file(ilks["WBTC-A"].ilk, bytes32("xlip"), address(ilks["USDC-A"].gem));
 
         assertEq(registry.gem(ilks["WBTC-A"].ilk),  ilks["USDC-A"].gem);
         assertEq(registry.join(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
+        assertEq(registry.pip(ilks["WBTC-A"].ilk),  ilks["USDC-A"].gem);
         assertEq(registry.xlip(ilks["WBTC-A"].ilk), ilks["USDC-A"].gem);
     }
 
