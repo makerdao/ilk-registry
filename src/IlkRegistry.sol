@@ -74,17 +74,17 @@ contract GemInfo {
 
 contract IlkRegistry {
 
-    event Rely(address usr);
-    event Deny(address usr);
-    event File(bytes32 what, address data);
-    event File(bytes32 ilk, bytes32 what, address data);
-    event File(bytes32 ilk, bytes32 what, uint256 data);
-    event File(bytes32 ilk, bytes32 what, string data);
-    event AddIlk(bytes32 ilk);
-    event RemoveIlk(bytes32 ilk);
-    event UpdateIlk(bytes32 ilk);
-    event NameError(bytes32 ilk);
-    event SymbolError(bytes32 ilk);
+    event Rely(address indexed usr);
+    event Deny(address indexed usr);
+    event File(bytes32 indexed what, address data);
+    event File(bytes32 indexed ilk, bytes32 indexed what, address data);
+    event File(bytes32 indexed ilk, bytes32 indexed what, uint256 data);
+    event File(bytes32 indexed ilk, bytes32 indexed what, string data);
+    event AddIlk(bytes32 indexed ilk);
+    event RemoveIlk(bytes32 indexed ilk);
+    event UpdateIlk(bytes32 indexed ilk);
+    event NameError(bytes32 indexed ilk);
+    event SymbolError(bytes32 indexed ilk);
 
     // --- Auth ---
     mapping (address => uint) public wards;
