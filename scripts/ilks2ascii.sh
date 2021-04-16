@@ -1,5 +1,5 @@
 #!/bin/bash
-### ilks2ascii -- list ilks from ilks registry in ascii
+### ilks2ascii -- list ilks from ilk-registry in ascii
 ### Usage: ./ilks2ascii <ilk-registry-address>
 
 ILKS=$(seth call "$1" "list()(bytes32[])")
