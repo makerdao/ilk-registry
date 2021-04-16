@@ -67,6 +67,8 @@ seth send $REGISTRY "add(address)" "0x9f1Ed3219035e6bDb19E0D95d316c7c39ad302EC"
 seth send $REGISTRY "add(address)" "0x03f18d97D25c13FecB15aBee143276D3bD2742De"
 # PAXG-A
 seth send $REGISTRY "add(address)" "0x822248F31bd899DE327A760a78B6C84889aF180D"
+# PSM-USDC-A
+seth send $REGISTRY "add(address)" "0x4BA159Ad37FD80D235b4a948A8682747c74fDc0E"
 
 
 # put(bytes32 _ilk, address _join, address _gem, uint256 _dec, uint256 _class, address _pip, address _xlip, string calldata _name, string calldata _symbol)
