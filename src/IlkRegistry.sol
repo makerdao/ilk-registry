@@ -326,8 +326,8 @@ contract IlkRegistry {
     }
 
     // The classification code of the ilk
-    //  1  - Flipper
-    //  2  - Clipper
+    //  1  - Clipper
+    //  2  - Flipper
     //  3+ - RWA or custom adapter
     function class(bytes32 ilk) external view returns (uint256) {
         return ilkData[ilk].class;
