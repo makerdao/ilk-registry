@@ -4,9 +4,9 @@ A publicly-modifiable registry of `ilk`'s in the Dai Stablecoin System.
 
 ## Public addresses
 
-Kovan: [0xedE45A0522CA19e979e217064629778d6Cc2d9Ea](https://kovan.etherscan.io/address/0xedE45A0522CA19e979e217064629778d6Cc2d9Ea)
+Kovan: [0xc3F42deABc0C506e8Ae9356F2d4fc1505196DCDB](https://kovan.etherscan.io/address/0xc3F42deABc0C506e8Ae9356F2d4fc1505196DCDB)
 
-Mainnet: [0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24](https://etherscan.io/address/0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24)
+Mainnet: [0x5a464C28D19848f44199D003BeF5ecc87d090F87](https://etherscan.io/address/0x5a464C28D19848f44199D003BeF5ecc87d090F87)
 
 ## Requirements
 
