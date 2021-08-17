@@ -108,8 +108,8 @@ contract DssIlkRegistryTest is DSTest {
     }
 
     function initCollateral(bytes32 name) internal returns (Ilk memory) {
-        DSToken coin = new DSToken(name);
-        coin.setName(name);
+        DSToken coin = new DSToken(bytes32ToStr(name));
+        coin.setName(bytes32ToStr(name));
         coin.mint(20 ether);
 
         vat.init(name);
@@ -136,8 +136,8 @@ contract DssIlkRegistryTest is DSTest {
     }
 
     function initClippableCollateral(bytes32 name) internal returns (Ilk memory) {
-        DSToken coin = new DSToken(name);
-        coin.setName(name);
+        DSToken coin = new DSToken(bytes32ToStr(name));
+        coin.setName(bytes32ToStr(name));
         coin.mint(20 ether);
 
         vat.init(name);
