@@ -1,4 +1,5 @@
 # Ilk Registry
+![Build Status](https://github.com/makerdao/ilk-registry/actions/workflows/.github/workflows/tests.yaml/badge.svg?branch=master)
 
 A publicly-modifiable registry of `ilk`'s in the Dai Stablecoin System.
 
