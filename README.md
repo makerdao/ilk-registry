@@ -7,6 +7,8 @@ A publicly-modifiable registry of `ilk`'s in the Dai Stablecoin System.
 
 Kovan: [0xc3F42deABc0C506e8Ae9356F2d4fc1505196DCDB](https://kovan.etherscan.io/address/0xc3F42deABc0C506e8Ae9356F2d4fc1505196DCDB)
 
+Goerli: [0x525FaC4CEc48a4eF2FBb0A72355B6255f8D5f79e](https://goerli.etherscan.io/address/0x525FaC4CEc48a4eF2FBb0A72355B6255f8D5f79e)
+
 Mainnet: [0x5a464C28D19848f44199D003BeF5ecc87d090F87](https://etherscan.io/address/0x5a464C28D19848f44199D003BeF5ecc87d090F87)
 
 ## Requirements
