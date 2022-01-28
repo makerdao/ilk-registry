@@ -282,7 +282,7 @@ contract DssIlkRegistryTest is DSTest {
         registry = new IlkRegistry(address(vat), address(dog), address(cat), address(spot));
     }
 
-    function isIlkInReg(bytes32 _ilk) public returns (bool) {
+    function isIlkInReg(bytes32 _ilk) public view returns (bool) {
         bytes32[] memory _list = registry.list();
         for (uint256 i = 0; i < _list.length; i++) {
             if (_list[i] == _ilk) { return true; }
