@@ -35,6 +35,7 @@ Useful for external contracts or web frontends which need to iterate over the on
     * `info(bytes32 ilk)`: return information about an ilk
         * `name`: token name (`string`)
         * `symbol`: token symbol (`string`)
+        * `class`: classification code of the ilk (`uint256`)
         * `dec`: token decimals (`uint256`)
         * `gem`: token address
         * `pip`: price feed
